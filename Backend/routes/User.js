@@ -1,7 +1,7 @@
 const { Router }= require("express");
 const userRouter = Router();
 const {z}= require("zod");
-const {userModel} = require("../db");
+const {userModel, userDetailModel} = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { JWT_USER_PASSWORD }=require("../config");
@@ -24,6 +24,14 @@ userRouter.post("/Signup", async function(req,res){
       }
     
       const { Firstname, Lastname, email, password } = parsedDataWithSuccess.data;
+
+      const userExists = await userDetailModel.findOne({ Email: email });
+
+  if (!userExists) {
+    return res.status(403).json({
+      message: "User not authorized to register. Please contact admin.",
+    });
+  }
       const hashedPassword = await bcrypt.hash(password, 10);
     
       try {

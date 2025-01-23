@@ -26,7 +26,16 @@ const UserSchema = new Schema({
     Lastname: { type: String, required: true },
     Age: { type: Number, required: true },
     Email: { type: String, unique: true, required: true },
-    
+    DOB : { type: String, unique: true, required: true },
+    StudentContactNo : { type: Number, unique: true, required: true },
+    MotherContactNo : { type: Number, unique: true, required: true },
+    FatherContactNo : { type: Number, unique: true, required: true },
+    Address : { type: String, unique: true, required: true },
+    DateOfAdmission : { type: String, unique: true, required: true },
+    HostelName : { type: String, unique: true, required: true },
+    AadharNumber : { type: Number, unique: true, required: true },
+    CollageName : { type: String, unique: true, required: true },
+    RoomNumber : { type: Number, unique: true, required: true },
   });
   const userModel = mongoose.model("user",UserSchema);
   const adminModel = mongoose.model("admin",AdminSchema);

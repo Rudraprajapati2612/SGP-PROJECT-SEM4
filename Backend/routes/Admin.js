@@ -80,15 +80,29 @@ adminRouter.post("/Login", async function (req, res) {
 });
 
 adminRouter.post("/addNewUser", adminMiddleware,async function (req, res) {
-  const { Firstname, Lastname, Age,Email } = req.body;
-  if (!Firstname || !Lastname || !Age) {
+  const { Firstname, Lastname, Age,Email,DOB,
+    StudentContactNo,
+    MotherContactNo,
+    FatherContactNo,
+    Address,
+    DateOfAdmission,
+    HostelName,
+    AadharNumber,
+    CollageName,RoomNumber } = req.body;
+  if (!Firstname || !Lastname || !Age ||!Email || !StudentContactNo || !MotherContactNo || !FatherContactNo|| !Address||!DateOfAdmission || !DOB ||!HostelName||!AadharNumber||!CollageName||!RoomNumber ) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
   try {
-
-   
-    const userDetail = new userDetailModel({ Firstname, Age, Lastname, Email });
+    const userDetail = new userDetailModel({ Firstname, Age, Lastname, Email, DOB,
+      StudentContactNo,
+      MotherContactNo,
+      FatherContactNo,
+      Address,
+      DateOfAdmission,
+      HostelName,
+      AadharNumber,
+      CollageName,RoomNumber });
     await userDetail.save();
     res.status(201).json({ message: 'Student added successfully', student: userDetail });
   } catch (error) {
