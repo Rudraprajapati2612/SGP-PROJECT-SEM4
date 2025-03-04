@@ -1,14 +1,15 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel  } = require("../db");
-
-
+const { adminModel, userDetailModel,userModel  } = require("../db");
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminMiddleware } = require("../middleware/adminMid");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
 adminRouter.post("/Signup", async function (req, res) {
   const requireBody = z.object({
     Firstname: z.string(),
@@ -24,7 +25,7 @@ adminRouter.post("/Signup", async function (req, res) {
       error: parsedDataWithSuccess.error.errors, 
     });
   }
-
+  
   const { Firstname, Lastname, email, password } = parsedDataWithSuccess.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -79,34 +80,62 @@ adminRouter.post("/Login", async function (req, res) {
   }
 });
 
-adminRouter.post("/addNewUser", adminMiddleware,async function (req, res) {
-  const { Firstname, Lastname, Age,Email,DOB,
-    StudentContactNo,
-    MotherContactNo,
-    FatherContactNo,
-    Address,
-    DateOfAdmission,
-    HostelName,
-    AadharNumber,
-    CollageName,RoomNumber } = req.body;
-  if (!Firstname || !Lastname || !Age ||!Email || !StudentContactNo || !MotherContactNo || !FatherContactNo|| !Address||!DateOfAdmission || !DOB ||!HostelName||!AadharNumber||!CollageName||!RoomNumber ) {
-    return res.status(400).json({ message: 'All fields are required' });
+adminRouter.post("/addNewUser", adminMiddleware, async function (req, res) {
+  const { Firstname, Lastname, Email, StudentContactNo, DateOfAdmission, HostelName, CollageName, RoomNumber } = req.body;
+
+  if (!Firstname || !Lastname || !Email || !StudentContactNo || !DateOfAdmission || !HostelName || !CollageName || !RoomNumber) {
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    const userDetail = new userDetailModel({ Firstname, Age, Lastname, Email, DOB,
+    // Generate a random password
+    const randomPassword = crypto.randomBytes(6).toString("hex");
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    // Save student details
+    const userDetail = new userDetailModel({
+      Firstname,
+      Lastname,
+      Email,
       StudentContactNo,
-      MotherContactNo,
-      FatherContactNo,
-      Address,
       DateOfAdmission,
       HostelName,
-      AadharNumber,
-      CollageName,RoomNumber });
+      CollageName,
+      RoomNumber,
+    });
+
     await userDetail.save();
-    res.status(201).json({ message: 'Student added successfully', student: userDetail });
+
+    // Save user credentials
+    await userModel.create({
+      Firstname,
+      Lastname,
+      email: Email,
+      password: hashedPassword,
+    });
+
+    // Send email with credentials
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // Set these in your .env file
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: Email,
+      subject: "Your Hostel Management System Credentials",
+      text: `Hello ${Firstname},\n\nYour account has been created successfully. Here are your login credentials:\n\nEmail: ${Email}\nPassword: ${randomPassword}\n\n.\n\nRegards,\nHostel Management Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(201).json({ message: "Student added successfully and email sent!", student: userDetail });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error adding student', error: error.message });
+    res.status(500).json({ message: "Error adding student", error: error.message });
   }
 });
 
@@ -161,6 +190,8 @@ adminRouter.put("/updateStudent/:id", adminMiddleware, async function (req, res)
     });
   }
 });
+
+
 adminRouter.delete("/DeleteStudent/:id", adminMiddleware, async function (req, res) {
   const studentIdDel = req.params.id;
   try{
