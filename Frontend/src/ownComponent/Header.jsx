@@ -16,7 +16,7 @@ function Header() {
       <ul className="hidden md:flex gap-8 text-lg">
         <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
         <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
-        <li className="text-white hover:text-gray-400 cursor-pointer">Gallery</li>
+        <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
       </ul>
 
       {/* Login & Register Buttons */}
@@ -41,7 +41,7 @@ function Header() {
         <ul className="absolute top-16 left-0 w-full bg-[#0F1117] flex flex-col items-center gap-4 py-4 border-b border-gray-700">
           <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
           <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
-          <li className="text-white hover:text-gray-400 cursor-pointer">Gallery</li>
+          <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
           <button className="text-white px-5 py-2 rounded-lg hover:text-gray-400 bg-[#1B1D23]">
             Login
           </button>

@@ -7,6 +7,8 @@ import Hero from './ownComponent/Hero'
 import Features from './ownComponent/Cards'
 import AdminDashboard from './ownComponent/AdminDashboard'
 import StudentDashboard from './ownComponent/StudentDashboard'
+import Aboutus from './ownComponent/Aboutus'
+import Footer from './ownComponent/Footer'
 
 
 
@@ -19,9 +21,11 @@ function App() {
     <>
     {/* <Header></Header>
     <Hero></Hero>
-  <Features></Features> */}
-  {/* <AdminDashboard></AdminDashboard> */}
-  <StudentDashboard></StudentDashboard>
+  <Features></Features>
+  <Aboutus></Aboutus>
+  <Footer></Footer> */}
+  <AdminDashboard></AdminDashboard>
+  {/* <StudentDashboard></StudentDashboard> */}
     </>
   )
 }

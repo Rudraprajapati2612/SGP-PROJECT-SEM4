@@ -80,139 +80,71 @@ adminRouter.post("/Login", async function (req, res) {
   }
 });
 
-adminRouter.post("/addNewUser", adminMiddleware, async function (req, res) {
-  const { Firstname, Lastname, Email, StudentContactNo, DateOfAdmission, HostelName, CollageName, RoomNumber } = req.body;
 
-  if (!Firstname || !Lastname || !Email || !StudentContactNo || !DateOfAdmission || !HostelName || !CollageName || !RoomNumber) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
 
-  try {
-    // Generate a random password
-    const randomPassword = crypto.randomBytes(6).toString("hex");
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-    // Save student details
-    const userDetail = new userDetailModel({
-      Firstname,
-      Lastname,
-      Email,
-      StudentContactNo,
-      DateOfAdmission,
-      HostelName,
-      CollageName,
-      RoomNumber,
-    });
-
-    await userDetail.save();
-
-    // Save user credentials
-    await userModel.create({
-      Firstname,
-      Lastname,
-      email: Email,
-      password: hashedPassword,
-    });
-
-    // Send email with credentials
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER, // Set these in your .env file
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: Email,
-      subject: "Your Hostel Management System Credentials",
-      text: `Hello ${Firstname},\n\nYour account has been created successfully. Here are your login credentials:\n\nEmail: ${Email}\nPassword: ${randomPassword}\n\n.\n\nRegards,\nHostel Management Team`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.status(201).json({ message: "Student added successfully and email sent!", student: userDetail });
-
-  } catch (error) {
-    res.status(500).json({ message: "Error adding student", error: error.message });
-  }
-});
-
-adminRouter.put("/updateStudent/:id", adminMiddleware, async function (req, res) {
-  const studentId = req.params.id;
-
-  const updateSchema = z.object({
-    Firstname: z.string().optional(),
-    Lastname: z.string().optional(),
-    Age: z.string().optional(),
-    Email: z.string().email().optional(),
-    DOB: z.string().optional(),
-    StudentContactNo: z.string().optional(),
-    MotherContactNo: z.string().optional(),
-    FatherContactNo: z.string().optional(),
-    Address: z.string().optional(),
-    DateOfAdmission: z.string().optional(),
-    HostelName: z.string().optional(),
-    AadharNumber: z.string().optional(),
-    CollageName: z.string().optional(),
-    RoomNumber: z.string().optional(),
+  adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
+    const { email, Firstname, Lastname } = req.body;
+  
+    if (!Firstname || !Lastname || !email) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+  
+    try {
+      // Check if the student already exists
+      const existingUser = await userModel.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: "Student already registered" });
+      }
+  
+      // Generate a random password
+      const randomPassword = crypto.randomBytes(4).toString("hex");
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+  
+      // Create user in database
+      const newUser = await userModel.create({
+        Firstname,
+        Lastname,
+        email,
+        password: hashedPassword,
+      });
+  
+      // Create UserDetails with userId
+      // const userDetail = new userDetailModel({
+      //   userId: newUser._id, // Use the ID of the newly created user
+      // });
+      // await userDetail.save();
+  
+      // Send email with credentials
+      await newUser.save();
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+  
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Your Hostel Management System Credentials",
+        text: `Hello ${Firstname},\n\nYour account has been created successfully.\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${randomPassword}\n\nPlease log in and update your profile.\n\nRegards,\nHostel Management Team`,
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      res.status(201).json({
+        message: "Student registered successfully, credentials sent via email!",
+        student: userDetail,
+      });
+  
+    } catch (error) {
+      console.error("Error adding student:", error);
+      res.status(500).json({ message: "Error adding student", error: error.message });
+    }
   });
 
-  const parsedData = updateSchema.safeParse(req.body);
-  if (!parsedData.success) {
-    return res.status(400).json({
-      message: "Invalid update data",
-      errors: parsedData.error.errors,
-    });
-  }
 
-  try {
-    const updatedStudent = await userDetailModel.findByIdAndUpdate(
-      studentId,
-      parsedData.data,
-      { new: true }
-    );
-
-    if (!updatedStudent) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    res.status(200).json({
-      message: "Student details updated successfully",
-      student: updatedStudent,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Error updating student details",
-      error: error.message,
-    });
-  }
-});
-
-
-adminRouter.delete("/DeleteStudent/:id", adminMiddleware, async function (req, res) {
-  const studentIdDel = req.params.id;
-  try{
-    const DeleteStudent = await userDetailModel.findByIdAndDelete(studentIdDel);
-    if(!DeleteStudent){
-      res.status(404).json({
-        message : "Student Not Found Or Alredy Deleted"
-      })
-    }
-
-    res.status(200).json({
-      message : "Student Details Delete Suscefully"
-    })
-  }catch(error){
-    console.error(error);
-    res.status(500).json({
-      message: "Error deleting student details",
-      error: error.message,
-    });
-  }
-});
 
 module.exports = {
   adminRouter: adminRouter,

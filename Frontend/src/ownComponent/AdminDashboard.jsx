@@ -68,7 +68,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
+ 
 function DashboardCard({ icon, title, subtitle, status, statusColor }) {
   return (
     <Card className="bg-[#1B1D23] border border-gray-800 rounded-xl overflow-hidden hover:border-[#6C5DD3]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5DD3]/10 cursor-pointer group ">

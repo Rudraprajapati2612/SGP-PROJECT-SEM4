@@ -20,20 +20,14 @@ const AdminSchema = new Schema({
 });
 
 const UserDetailsSchema = new Schema({
-  Firstname: { type: String, required: true },
-  Lastname: { type: String, required: true },
-
-  Email: { type: String, unique: true, required: true },
-
-  StudentContactNo: { type: String, unique: true, required: true },
-  DateOfAdmission: { type: String, required: true },
-  HostelName: { type: String, unique: true, required: true },
-
-  CollageName: { type: String, unique: true, required: true },
-  RoomNumber: { type: String, unique: true, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: "UserCred", required: true }, // Reference to UserSchema
+  roomNumber: { type: Number }, // Optional: Assigned room number
+  contactNumber: { type: String }, // Optional: Student phone number
+  address: { type: String }, // Optional: Student address
+  guardianName: { type: String }, // Optional: Parent/Guardian name
 });
-const userModel = mongoose.model("user", UserSchema);
-const adminModel = mongoose.model("admin", AdminSchema);
+const userModel = mongoose.model("UserCred", UserSchema);
+const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
 module.exports = {
   userModel,
