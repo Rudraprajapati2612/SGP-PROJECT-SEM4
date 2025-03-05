@@ -71,7 +71,7 @@ export default function AdminDashboard() {
 
 function DashboardCard({ icon, title, subtitle, status, statusColor }) {
   return (
-    <Card className="bg-[#1B1D23] border border-gray-800 rounded-xl overflow-hidden hover:border-[#6C5DD3]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5DD3]/10 cursor-pointer group">
+    <Card className="bg-[#1B1D23] border border-gray-800 rounded-xl overflow-hidden hover:border-[#6C5DD3]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6C5DD3]/10 cursor-pointer group ">
       <CardContent className="p-6">
         <div className="flex items-center space-x-3 mb-3">
           <div className="p-2 rounded-lg bg-[#2A2D39] group-hover:bg-[#6C5DD3]/20 transition-colors">

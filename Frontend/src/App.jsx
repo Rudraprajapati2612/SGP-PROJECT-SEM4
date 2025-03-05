@@ -6,6 +6,7 @@ import Header from './ownComponent/Header'
 import Hero from './ownComponent/Hero'
 import Features from './ownComponent/Cards'
 import AdminDashboard from './ownComponent/AdminDashboard'
+import StudentDashboard from './ownComponent/StudentDashboard'
 
 
 
@@ -16,11 +17,11 @@ function App() {
 
   return (
     <>
-    <Header></Header>
+    {/* <Header></Header>
     <Hero></Hero>
-  <Features></Features>
+  <Features></Features> */}
   {/* <AdminDashboard></AdminDashboard> */}
-  
+  <StudentDashboard></StudentDashboard>
     </>
   )
 }
