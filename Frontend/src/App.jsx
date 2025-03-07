@@ -9,7 +9,10 @@ import AdminDashboard from './ownComponent/AdminDashboard'
 import StudentDashboard from './ownComponent/StudentDashboard'
 import Aboutus from './ownComponent/Aboutus'
 import Footer from './ownComponent/Footer'
-
+import LoginPage from './ownComponent/Login'
+import Adminregestration from './ownComponent/Adminregestration'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import StudentRegistration from './ownComponent/StudentRegestration'
 
 
 
@@ -19,13 +22,19 @@ function App() {
 
   return (
     <>
-    {/* <Header></Header>
+   
+    
+    
+     <Header></Header>
     <Hero></Hero>
   <Features></Features>
   <Aboutus></Aboutus>
-  <Footer></Footer> */}
+  <Footer></Footer> 
+  <Adminregestration></Adminregestration>
   <AdminDashboard></AdminDashboard>
-  {/* <StudentDashboard></StudentDashboard> */}
+  <LoginPage></LoginPage>
+  <StudentRegistration></StudentRegistration>
+  <StudentDashboard></StudentDashboard>
     </>
   )
 }

@@ -1,15 +1,15 @@
 const e = require("express");
 const mongoose = require("mongoose");
-const { number, string } = require("zod");
+const { number, string, union } = require("zod");
 const Schema = mongoose.Schema;
 
 const objectId = Schema.ObjectId;
 
 const UserSchema = new Schema({
-  Firstname: String,
-  Lastname: String,
+  Name: String,
   email: { type: String, unique: true },
   password: String,
+  roomNumber : {type:Number ,require:true}
 });
 
 const AdminSchema = new Schema({
@@ -26,11 +26,20 @@ const UserDetailsSchema = new Schema({
   address: { type: String }, // Optional: Student address
   guardianName: { type: String }, // Optional: Parent/Guardian name
 });
+
+const RoomSchema = new Schema({
+  roomNumber : {type:Number,require:true,unique:true},
+  capacity:{type:Number,require:true},
+  assignedStudents: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  isFull: { type: Boolean, default: false },
+})
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
+const RoomModel = mongoose.model("RoomDetails",RoomSchema);
 module.exports = {
   userModel,
   adminModel,
   userDetailModel,
+  RoomModel
 };

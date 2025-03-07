@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel,userModel  } = require("../db");
+const { adminModel, userDetailModel, userModel, RoomModel } = require("../db");
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -9,6 +9,8 @@ const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminMiddleware } = require("../middleware/adminMid");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { text } = require("stream/consumers");
+const { console } = require("inspector");
 
 adminRouter.post("/Signup", async function (req, res) {
   const requireBody = z.object({
@@ -22,10 +24,10 @@ adminRouter.post("/Signup", async function (req, res) {
   if (!parsedDataWithSuccess.success) {
     return res.status(400).json({
       message: "Incorrect Format",
-      error: parsedDataWithSuccess.error.errors, 
+      error: parsedDataWithSuccess.error.errors,
     });
   }
-  
+
   const { Firstname, Lastname, email, password } = parsedDataWithSuccess.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -81,70 +83,83 @@ adminRouter.post("/Login", async function (req, res) {
 });
 
 
+adminRouter.get("/available-rooms", async (req, res) => { 
+  try{
+    const availableRooms = await RoomModel.find().select("roomNumber capacity assignedStudents");
 
-  adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
-    const { email, Firstname, Lastname } = req.body;
-  
-    if (!Firstname || !Lastname || !email) {
-      return res.status(400).json({ message: "All fields are required" });
+    const roomWithAvailibility = availableRooms.map(room=>({
+      roomNumber : room.roomNumber,
+      capacity : room.capacity,
+      occupied : room.assignedStudents.length,
+      available : room.capacity - room.assignedStudents.length,
+    }));
+    res.status(200).json({ rooms: roomWithAvailibility });
+  }catch(e){
+    console.error("Error fetching available rooms:", error);
+    res.status(500).json({ message: "Error fetching available rooms" });
+  }
+ });
+
+
+adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
+  const { email, Name, roomNumber } = req.body;
+  if (!email || !Name || !roomNumber) {
+    return res.status(400).json({ message: "All fields Are Require" });
+  }
+
+  try {
+    const activeUser = await userModel.findOne({ email });
+    if (activeUser) {
+      return res.status(400).json({ message: "Student Already Registered " });
     }
-  
-    try {
-      // Check if the student already exists
-      const existingUser = await userModel.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ message: "Student already registered" });
-      }
-  
-      // Generate a random password
-      const randomPassword = crypto.randomBytes(4).toString("hex");
-      const hashedPassword = await bcrypt.hash(randomPassword, 10);
-  
-      // Create user in database
-      const newUser = await userModel.create({
-        Firstname,
-        Lastname,
-        email,
-        password: hashedPassword,
-      });
-  
-      // Create UserDetails with userId
-      // const userDetail = new userDetailModel({
-      //   userId: newUser._id, // Use the ID of the newly created user
-      // });
-      // await userDetail.save();
-  
-      // Send email with credentials
-      await newUser.save();
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-  
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Your Hostel Management System Credentials",
-        text: `Hello ${Firstname},\n\nYour account has been created successfully.\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${randomPassword}\n\nPlease log in and update your profile.\n\nRegards,\nHostel Management Team`,
-      };
-  
-      await transporter.sendMail(mailOptions);
-  
-      res.status(201).json({
-        message: "Student registered successfully, credentials sent via email!",
-        student: userDetail,
-      });
-  
-    } catch (error) {
-      console.error("Error adding student:", error);
-      res.status(500).json({ message: "Error adding student", error: error.message });
+    const room = await RoomModel.findOne({ roomNumber });
+
+    if (!room) {
+      return res.status(400).json({ message: "Room  not Found " });
     }
-  });
 
+    const randompassword = crypto.randomBytes(4).toString("hex");
 
+    const hashedPassword = await bcrypt.hash(randompassword, 10);
+
+    const newUser = await userModel.create({
+      Name,
+      email,
+      password: hashedPassword,
+      roomNumber,
+    });
+    // assign room to student
+    room.assignedStudents.push(newUser._id);
+    await room.save();
+
+    // send email with cred
+
+    const transport = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOption = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Hostel Management System Credentials",
+      text: `Hello ${Name},\n\nYour account has been created successfully.\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${randomPassword}\n\nYour assigned room number is: ${roomNumber}\n\nPlease log in and update your profile.\n\nRegards,\nHostel Management Team`,
+    };
+    await transport.sendMail(mailOption);
+    res.status(201).json({
+      message:"Student Register Successfully, Credentials Sent Via email!",
+      student :newUser,
+    });
+  } catch (error) {
+    console.error("Error Adding Student",error);
+    res.status(500).json({message:"Error Adding Student",
+      error :error.message
+    });
+  }
+});
 
 module.exports = {
   adminRouter: adminRouter,
