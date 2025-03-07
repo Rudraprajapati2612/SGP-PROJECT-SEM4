@@ -1,46 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './index.css'
-import Header from './ownComponent/Header'
-import Hero from './ownComponent/Hero'
-import Features from './ownComponent/Cards'
-import AdminDashboard from './ownComponent/AdminDashboard'
-import StudentDashboard from './ownComponent/StudentDashboard'
-import Aboutus from './ownComponent/Aboutus'
-import Footer from './ownComponent/Footer'
-import LoginPage from './ownComponent/Login'
-import Adminregestration from './ownComponent/Adminregestration'
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import StudentRegistration from './ownComponent/StudentRegestration'
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
-
+import './index.css';
+import HomePage from './ownComponent/HomePage';
+import AdminDashboard from './ownComponent/AdminDashboard';
+import LoginPage from './ownComponent/Login';
+import AdminRegistration from './ownComponent/Adminregestration';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
-    <>
-   
-    
-    
-     <Header></Header>
-    <Hero></Hero>
-  <Features></Features>
-  <Aboutus></Aboutus>
-  <Footer></Footer> 
-  <Adminregestration></Adminregestration>
-  <AdminDashboard></AdminDashboard>
-  <LoginPage></LoginPage>
-  <StudentRegistration></StudentRegistration>
-  <StudentDashboard></StudentDashboard>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path='/AdminDashboard' element={<AdminDashboard/>}/>
+        <Route path='/Login' element={<LoginPage/>}/>
+        <Route path='/AdminRegestration' element={<AdminRegistration/>} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
-
-
-
-
+export default App;

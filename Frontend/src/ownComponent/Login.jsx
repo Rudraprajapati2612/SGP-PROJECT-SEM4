@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Building2, User, Lock } from 'lucide-react';
+import { Building2, User, Lock,ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("student");
@@ -32,6 +32,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0F1117] flex items-center justify-center p-4">
+       
+       <div className="absolute top-8 left-8">
+        <button 
+          onClick={() => window.history.back()} 
+          className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
+      </div>
+
+
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
