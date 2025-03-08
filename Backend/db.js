@@ -21,11 +21,23 @@ const AdminSchema = new Schema({
 
 const UserDetailsSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "UserCred", required: true }, // Reference to UserSchema
-  roomNumber: { type: Number }, // Optional: Assigned room number
-  contactNumber: { type: String }, // Optional: Student phone number
-  address: { type: String }, // Optional: Student address
-  guardianName: { type: String }, // Optional: Parent/Guardian name
+  Firstname: String,
+  Lastname : String,
+  dateOfBirth: String,
+  bloodGroup: String,
+  contactNumber: String,
+  parentsContact: String,
+  guardianContact: String,
+  emergencyContact: String,
+  address: String,
+  city: String,
+  state: String,
+  course: String,
+  semester: String,
+  roomNumber: { type: Number }, // Non-editable field
+  email: { type: String, unique: true, sparse: true },
 });
+
 
 const RoomSchema = new Schema({
   roomNumber : {type:Number,require:true,unique:true},

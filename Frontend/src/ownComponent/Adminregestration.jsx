@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
+
 const AdminRegistration = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -21,12 +21,36 @@ const AdminRegistration = () => {
     }));
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission - connect to your backend here
-    console.log('Form submitted:', formData);
-  };
-  
+
+    console.log("Submitting form:", formData); // Debugging log
+
+    try {
+        const response = await fetch("http://localhost:3000/api/v1/admin/Signup", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const data = await response.json(); // Convert response to JSON
+
+        console.log("Response from server:", data); // Debugging log
+
+        if (!response.ok) {
+            throw new Error(data.error || JSON.stringify(data)); // Handle errors properly
+        }
+
+        alert("Admin registered successfully!");
+       
+    } catch (error) {
+        console.error("Error:", error);
+        alert(error.message);
+    }
+};
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -122,7 +146,7 @@ const AdminRegistration = () => {
               <p className="text-xs text-gray-500">Password must be at least 8 characters</p>
             </div>
             
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm text-gray-400">Confirm Password</label>
               <div className="relative">
                 <input
@@ -142,7 +166,7 @@ const AdminRegistration = () => {
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-            </div>
+            </div> */}
             
             <button
               type="submit"

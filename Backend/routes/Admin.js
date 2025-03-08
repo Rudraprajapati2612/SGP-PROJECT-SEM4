@@ -14,11 +14,11 @@ const { console } = require("inspector");
 
 adminRouter.post("/Signup", async function (req, res) {
   const requireBody = z.object({
-    Firstname: z.string(),
-    Lastname: z.string(),
+    firstName: z.string(),  // Change to match frontend
+    lastName: z.string(),
     email: z.string().email().max(100),
     password: z.string().min(5).max(30),
-  });
+});
 
   const parsedDataWithSuccess = requireBody.safeParse(req.body);
   if (!parsedDataWithSuccess.success) {
@@ -28,16 +28,19 @@ adminRouter.post("/Signup", async function (req, res) {
     });
   }
 
-  const { Firstname, Lastname, email, password } = parsedDataWithSuccess.data;
+  const { firstName, lastName, email, password } = parsedDataWithSuccess.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    await adminModel.create({
-      Firstname: Firstname,
-      Lastname: Lastname,
-      email: email,
-      password: hashedPassword,
-    });
+   
+
+await adminModel.create({
+    Firstname: firstName,  // Convert to match DB field if needed
+    Lastname: lastName,
+    email: email,
+    password: hashedPassword,
+});
+
     res.status(201).json({
       message: "Signup Successfully",
     });
