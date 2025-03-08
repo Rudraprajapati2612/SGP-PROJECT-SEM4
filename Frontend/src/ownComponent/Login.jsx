@@ -22,8 +22,8 @@ export default function LoginPage() {
     e.preventDefault();
     const endpoint =
       activeTab === "admin"
-        ? "http://localhost:3000/api/v1/admin/Login"
-        : "http://localhost:3000/api/v1/user/Login";
+        ? "http://localhost:3000/api/v1/admin/login"
+        : "http://localhost:3000/api/v1/user/login";
 
     try {
       const response = await fetch(endpoint, {
@@ -38,15 +38,14 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+
+      if (!response.ok || !data.token) {
+        alert(data.message || "Invalid email or password");
+        return;
       }
 
-      // Save token
       localStorage.setItem("token", data.token);
 
-      // Redirect based on user type
       if (activeTab === "admin") {
         navigate("/admin/dashboard");
       } else {
@@ -54,7 +53,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login Error:", error.message);
-      alert(error.message);
+      alert("Something went wrong. Please try again.");
     }
   };
 
@@ -82,20 +81,16 @@ export default function LoginPage() {
         <div className="bg-[#1A1D29] rounded-xl border border-gray-800 overflow-hidden">
           <div className="flex border-b border-gray-800">
             <button
-              className={`flex-1 py-4 text-center font-medium transition-colors ${
-                activeTab === "student"
-                  ? "text-[#6C5DD3] border-b-2 border-[#6C5DD3]"
-                  : "text-gray-400 hover:text-gray-300"
+              className={`flex-1 py-4 text-center font-medium ${
+                activeTab === "student" ? "text-[#6C5DD3] border-b-2 border-[#6C5DD3]" : "text-gray-400"
               }`}
               onClick={() => setActiveTab("student")}
             >
               Student Login
             </button>
             <button
-              className={`flex-1 py-4 text-center font-medium transition-colors ${
-                activeTab === "admin"
-                  ? "text-[#6C5DD3] border-b-2 border-[#6C5DD3]"
-                  : "text-gray-400 hover:text-gray-300"
+              className={`flex-1 py-4 text-center font-medium ${
+                activeTab === "admin" ? "text-[#6C5DD3] border-b-2 border-[#6C5DD3]" : "text-gray-400"
               }`}
               onClick={() => setActiveTab("admin")}
             >
@@ -136,7 +131,7 @@ export default function LoginPage() {
               </div>
             </label>
 
-            <Button type="submit" className="w-full py-2 bg-[#6C5DD3] hover:bg-[#5B4DC3] text-white font-medium rounded-lg">
+            <Button type="submit" className="w-full py-2 bg-[#6C5DD3] text-white font-medium rounded-lg">
               {activeTab === "student" ? "Login as Student" : "Login as Admin"}
             </Button>
           </form>
