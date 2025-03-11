@@ -6,6 +6,7 @@ import HomePage from './ownComponent/HomePage';
 import AdminDashboard from './ownComponent/AdminDashboard';
 import LoginPage from './ownComponent/Login';
 import AdminRegistration from './ownComponent/Adminregestration';
+import StudentDashboard from './ownComponent/StudentDashboard';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -17,6 +18,7 @@ function App() {
         <Route path='/AdminDashboard' element={<AdminDashboard/>}/>
         <Route path='/Login' element={<LoginPage/>}/>
         <Route path='/AdminRegestration' element={<AdminRegistration/>} />
+        <Route path='/StudentDashboard' element={<StudentDashboard/>} />
       </Routes>
     </Router>
   );

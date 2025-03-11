@@ -22,8 +22,8 @@ export default function LoginPage() {
     e.preventDefault();
     const endpoint =
       activeTab === "admin"
-        ? "http://localhost:3000/api/v1/admin/login"
-        : "http://localhost:3000/api/v1/user/login";
+        ? "http://localhost:3000/api/v1/admin/Login"
+        : "http://localhost:3000/api/v1/user/Login";
 
     try {
       const response = await fetch(endpoint, {
@@ -36,20 +36,21 @@ export default function LoginPage() {
           password: formData.password,
         }),
       });
-
+      console.log(response.status)
       const data = await response.json();
-
+      console.log(data)
       if (!response.ok || !data.token) {
         alert(data.message || "Invalid email or password");
         return;
       }
 
       localStorage.setItem("token", data.token);
-
+      // console.log(localStorage.getItem("token"));
+      
       if (activeTab === "admin") {
-        navigate("/admin/dashboard");
+        navigate("/AdminDashboard");
       } else {
-        navigate("/student/dashboard");
+        navigate("/StudentDashboard");
       }
     } catch (error) {
       console.error("Login Error:", error.message);

@@ -19,10 +19,11 @@ const AdminSchema = new Schema({
   Lastname: String,
 });
 
+
 const UserDetailsSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "UserCred", required: true }, // Reference to UserSchema
-  Firstname: String,
-  Lastname : String,
+  firstName: String,
+  lastName: String,
   dateOfBirth: String,
   bloodGroup: String,
   contactNumber: String,
@@ -35,7 +36,7 @@ const UserDetailsSchema = new Schema({
   course: String,
   semester: String,
   roomNumber: { type: Number }, // Non-editable field
-  email: { type: String, unique: true, sparse: true },
+  email: { type: String, unique: true }
 });
 
 
@@ -45,6 +46,7 @@ const RoomSchema = new Schema({
   assignedStudents: [{ type: Schema.Types.ObjectId, ref: "User" }],
   isFull: { type: Boolean, default: false },
 })
+
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
