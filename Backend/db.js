@@ -45,6 +45,7 @@ const RoomSchema = new Schema({
   capacity:{type:Number,require:true},
   assignedStudents: [{ type: Schema.Types.ObjectId, ref: "User" }],
   isFull: { type: Boolean, default: false },
+  // Status :{type:string}
 })
 
 const userModel = mongoose.model("UserCred", UserSchema);

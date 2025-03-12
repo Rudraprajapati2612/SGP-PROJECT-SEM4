@@ -120,14 +120,31 @@ adminRouter.post("/add-room", adminMiddleware, async (req, res) => {
 // ✅ Fetch Available Rooms with Capacity & Availability
 adminRouter.get("/available-rooms", async (req, res) => {
   try {
-    const availableRooms = await RoomModel.find().select("roomNumber capacity assignedStudents");
+    const availableRooms = await RoomModel.find().select("roomNumber capacity assignedStudents isFull");
 
-    const roomWithAvailability = availableRooms.map(room => ({
-      roomNumber: room.roomNumber,
-      capacity: room.capacity,
-      occupied: room.assignedStudents.length,
-      available: room.capacity - room.assignedStudents.length,
-    }));
+    const roomWithAvailability = availableRooms.map(room => {
+      const occupied = room.assignedStudents.length;
+      const available = room.capacity - occupied;
+
+      // Determine room status dynamically
+      let status;
+      if (available === 0) {
+        status = "Full"; // Room is fully occupied
+      } else if (available < room.capacity) {
+        status = "Partially Occupied"; // Some slots are filled
+      } else {
+        status = "Vacant"; // No one is assigned
+      }
+
+      return {
+        roomNumber: room.roomNumber,
+        capacity: room.capacity,
+        occupied: occupied,
+        available: available,
+        isFull: available === 0, // Update isFull dynamically if needed
+        status: status,
+      };
+    });
 
     res.status(200).json({ rooms: roomWithAvailability });
   } catch (error) {
@@ -135,6 +152,7 @@ adminRouter.get("/available-rooms", async (req, res) => {
     res.status(500).json({ message: "Error fetching available rooms" });
   }
 });
+
 
 // ✅ Student Registration with Room Allocation
 adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
