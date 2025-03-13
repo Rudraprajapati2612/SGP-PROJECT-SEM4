@@ -65,7 +65,7 @@ export function ViewRoomsModal({ onClose, onAddRoom }) {
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <Input
-                placeholder="Search rooms..."
+                placeholder="Search rooms..."      
                 className="pl-10 bg-[#0F1117] border-gray-800 text-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)} // Update search query

@@ -39,7 +39,11 @@ const UserDetailsSchema = new Schema({
   email: { type: String, unique: true }
 });
 
-
+const MenuSchema = new Schema({
+  date:{type:String,require:true},
+  MealType :{type:String,require:true},
+  MenuItem :{type:String ,require:true}
+})
 const RoomSchema = new Schema({
   roomNumber : {type:Number,require:true,unique:true},
   capacity:{type:Number,require:true},
@@ -52,9 +56,11 @@ const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
 const RoomModel = mongoose.model("RoomDetails",RoomSchema);
+const MenuModel = mongoose.model("Menu",MenuSchema);
 module.exports = {
   userModel,
   adminModel,
   userDetailModel,
-  RoomModel
+  RoomModel,
+  MenuModel
 };

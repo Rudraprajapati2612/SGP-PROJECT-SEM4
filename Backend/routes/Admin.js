@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel, userModel, RoomModel } = require("../db");
+const { adminModel, userDetailModel, userModel, RoomModel,MenuModel } = require("../db");
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -231,7 +231,30 @@ adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
   }
 });
 
+adminRouter.put("/UpdateMenu", adminMiddleware, async function (req, res) {
+  const { date, MealType, MenuItem } = req.body;
 
+  if (!date || !MealType || !MenuItem) {
+    return res.status(400).json({ message: "All fields are required" });
+}
+
+
+  try {
+      const updatedMenu = await MenuModel.findOneAndUpdate(
+          { date, MealType },  // Find by date & meal type
+          { MenuItem },         // Update menu items
+          { new: true, upsert: true } // Return updated doc, create if not found
+      );
+
+      res.status(200).json({
+          message: "Menu Updated Successfully",
+          menu: updatedMenu
+      });
+  } catch (error) {
+      console.error("Error Updating Menu:", error);
+      res.status(500).json({ message: "Error Updating Menu", error: error.message });
+  }
+});
 
 module.exports = {
   adminRouter: adminRouter,

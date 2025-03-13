@@ -10,13 +10,58 @@ export function UpdateMenuModal({ onClose }) {
     items: "",
   })
 
-  const handleUpdateMenu = (e) => {
-    e.preventDefault()
-    console.log("Updating menu:", { date: selectedDate, ...menuData })
-    // Here you would typically make an API call to update the menu
-    onClose()
-  }
 
+  const handleUpdateMenu = async (e) => {
+    e.preventDefault();
+  
+    const token = localStorage.getItem("token");
+    console.log(token);
+    
+    if (!token) {
+      console.error("No token found, user not authenticated");
+      return;
+    }
+  
+    // Check data before sending
+    console.log("Submitting Data:", {
+      date: selectedDate,
+      mealType: menuData.mealType,
+      items: menuData.items,
+    });
+  
+    // Ensure no empty values
+    if (!selectedDate || !menuData.mealType || !menuData.items.trim()) {
+      console.error("Error: All fields are required");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:3000/api/v1/admin/UpdateMenu", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          date: selectedDate,
+          mealType: menuData.mealType,
+          items: menuData.items,
+        }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        console.log("Menu updated successfully:", result);
+        onClose();
+      } else {
+        console.error("Failed to update menu:", result.message);
+      }
+    } catch (error) {
+      console.error("Error updating menu:", error);
+    }
+  };
+  
   return (
     <div className="bg-[#1A1D29] rounded-xl border border-gray-800 overflow-hidden">
       {/* Modal Header */}
@@ -62,7 +107,9 @@ export function UpdateMenuModal({ onClose }) {
                     name="mealType"
                     value={type}
                     checked={menuData.mealType === type}
-                    onChange={() => setMenuData({ ...menuData, mealType: type })}
+                    // onChange={() => setMenuData({ ...menuData, mealType: type })}
+                    onChange={(e) => setMenuData({ ...menuData, mealType: e.target.value })}
+
                     className="sr-only" // Hide the actual radio button
                   />
                   <span className="capitalize">{type}</span>
