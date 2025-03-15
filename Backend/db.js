@@ -51,16 +51,23 @@ const RoomSchema = new Schema({
   isFull: { type: Boolean, default: false },
   // Status :{type:string}
 })
-
+  const ComplaintSchema = new Schema({
+    Subject:{type:String,require:true},
+    roomNumber:{type:String,require:true},
+    complaintDate:{type:String,require:true},
+    Description:{type:String,require:true}
+  })
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
 const RoomModel = mongoose.model("RoomDetails",RoomSchema);
 const MenuModel = mongoose.model("Menu",MenuSchema);
+const ComplaintModel = mongoose.model("Complain",ComplaintSchema)
 module.exports = {
   userModel,
   adminModel,
   userDetailModel,
   RoomModel,
-  MenuModel
+  MenuModel,
+  ComplaintModel
 };

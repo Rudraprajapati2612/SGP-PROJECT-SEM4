@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel, userModel, RoomModel,MenuModel } = require("../db");
+const { adminModel, userDetailModel, userModel, RoomModel,MenuModel,ComplaintModel } = require("../db");
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -232,18 +232,22 @@ adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
 });
 
 adminRouter.put("/UpdateMenu", adminMiddleware, async function (req, res) {
-  const { date, MealType, MenuItem } = req.body;
+  let { date, MealType, MenuItem } = req.body;
+
+  // Ensure values exist before using trim()
+  date = typeof date === "string" ? date.trim().replace(/,$/, "") : date;
+  MealType = typeof MealType === "string" ? MealType.trim().replace(/,$/, "") : MealType;
+  MenuItem = typeof MenuItem === "string" ? MenuItem.trim().replace(/,$/, "") : MenuItem;
 
   if (!date || !MealType || !MenuItem) {
-    return res.status(400).json({ message: "All fields are required" });
-}
-
+      return res.status(400).json({ message: "All fields are required" });
+  }
 
   try {
       const updatedMenu = await MenuModel.findOneAndUpdate(
-          { date, MealType },  // Find by date & meal type
-          { MenuItem },         // Update menu items
-          { new: true, upsert: true } // Return updated doc, create if not found
+          { date, MealType },  
+          { MenuItem },        
+          { new: true, upsert: true } 
       );
 
       res.status(200).json({
@@ -255,6 +259,54 @@ adminRouter.put("/UpdateMenu", adminMiddleware, async function (req, res) {
       res.status(500).json({ message: "Error Updating Menu", error: error.message });
   }
 });
+
+
+
+adminRouter.get("/GetComplaints", adminMiddleware, async function (req, res) {
+  try {
+    const complaints = await ComplaintModel.find().populate("roomNumber");
+
+    if (!complaints.length) {
+      return res.status(404).json({ message: "No complaints found" });
+    }
+
+    res.status(200).json({
+      message: "Complaints retrieved successfully",
+      complaints,
+    });
+  } catch (error) {
+    console.error("Error Fetching Complaints:", error);
+    res.status(500).json({
+      message: "Error Fetching Complaints",
+      error: error.message,
+    });
+  }
+});
+
+
+adminRouter.put("/ResolveComplaint/:complaintId", adminMiddleware, async (req, res) => {
+  try {
+    const { complaintId } = req.params;
+    const updatedComplaint = await ComplaintModel.findByIdAndUpdate(
+      complaintId,
+      { status: "Approved" },
+      { new: true }
+    );
+
+    if (!updatedComplaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    res.json({ message: "Complaint resolved successfully", updatedComplaint });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+
+
 
 module.exports = {
   adminRouter: adminRouter,

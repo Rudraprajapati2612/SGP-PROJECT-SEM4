@@ -15,22 +15,23 @@ export function UpdateMenuModal({ onClose }) {
     e.preventDefault();
   
     const token = localStorage.getItem("token");
-    console.log(token);
-    
     if (!token) {
       console.error("No token found, user not authenticated");
       return;
     }
   
+    // Ensure the date is in the correct format
+    const formattedDate = selectedDate; // Modify this if backend needs YYYY-MM-DD
+  
     // Check data before sending
     console.log("Submitting Data:", {
-      date: selectedDate,
-      mealType: menuData.mealType,
-      items: menuData.items,
+      date: formattedDate,
+      MealType: menuData.mealType,
+      MenuItem: menuData.items.trim(),
     });
   
     // Ensure no empty values
-    if (!selectedDate || !menuData.mealType || !menuData.items.trim()) {
+    if (!formattedDate || !menuData.mealType || !menuData.items.trim()) {
       console.error("Error: All fields are required");
       return;
     }
@@ -43,9 +44,9 @@ export function UpdateMenuModal({ onClose }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          date: selectedDate,
-          mealType: menuData.mealType,
-          items: menuData.items,
+          date: formattedDate,
+          MealType: menuData.mealType,
+          MenuItem: menuData.items.trim(),
         }),
       });
   
@@ -61,6 +62,7 @@ export function UpdateMenuModal({ onClose }) {
       console.error("Error updating menu:", error);
     }
   };
+  
   
   return (
     <div className="bg-[#1A1D29] rounded-xl border border-gray-800 overflow-hidden">
