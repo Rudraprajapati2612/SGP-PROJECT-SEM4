@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel, userModel, RoomModel,MenuModel,ComplaintModel } = require("../db");
+const { adminModel, userDetailModel, userModel, RoomModel,MenuModel,ComplaintModel,LightBillModel } = require("../db");
 const { z } = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -305,6 +305,72 @@ adminRouter.put("/ResolveComplaint/:complaintId", adminMiddleware, async (req, r
 
 
 
+adminRouter.post("/AddLightBill", adminMiddleware, async (req, res) => {
+  const { roomNumber, Month, PreviousUnits, CurrentUnits, rate = 11 } = req.body;
+  try {
+    if (!roomNumber || !Month || PreviousUnits === undefined || CurrentUnits === undefined) {
+      return res.status(400).json({ message: "All fields (roomNumber, Month, PreviousUnits, CurrentUnits) are required" });
+    }
+
+    const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+    if (!monthRegex.test(Month)) {
+      return res.status(400).json({ message: "Month must be in YYYY-MM format (e.g., 2025-04)" });
+    }
+
+    const existingBill = await LightBillModel.findOne({ roomNumber, Month });
+    if (existingBill) {
+      return res.status(400).json({ message: "Bill already exists for this room and month" });
+    }
+
+    const previousBill = await LightBillModel.findOne({ roomNumber }).sort({ Month: -1 });
+    let validatedPreviousUnits = PreviousUnits;
+    if (previousBill) {
+      validatedPreviousUnits = previousBill.CurrentUnits;
+      if (Month <= previousBill.Month) {
+        return res.status(400).json({ message: "Cannot add bill for a month earlier than or equal to the latest existing bill" });
+      }
+    }
+
+    if (CurrentUnits <= validatedPreviousUnits) {
+      return res.status(400).json({ message: "CurrentUnits must be greater than PreviousUnits" });
+    }
+
+    const UnitConsumed = CurrentUnits - validatedPreviousUnits;
+    const BillAmount = UnitConsumed * rate;
+
+    const NewLightBill = new LightBillModel({
+      roomNumber,
+      Month,
+      PreviousUnits: validatedPreviousUnits,
+      CurrentUnits,
+      UnitConsumed,
+      BillAmount,
+      rate,
+      createdAt: new Date()
+    });
+
+    await NewLightBill.save();
+    res.status(201).json({ message: "Bill added successfully", bill: NewLightBill });
+  } catch (error) {
+    console.error("Error adding bill:", error);
+    res.status(500).json({ error: "Error adding bill" });
+  }
+});
+
+// adminRouter.get("/AddLightBill", adminMiddleware, async (req, res) => {
+//   const { roomNumber } = req.query;
+//   try {
+//     if (roomNumber) {
+//       const previousBill = await LightBillModel.findOne({ roomNumber }).sort({ Month: -1 });
+//       res.status(200).json({ previousBill });
+//     } else {
+//       const bills = await LightBillModel.find();
+//       res.status(200).json({ bills });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error: "Error fetching bills" });
+//   }
+// });
 
 
 

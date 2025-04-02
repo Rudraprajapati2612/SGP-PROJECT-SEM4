@@ -57,17 +57,30 @@ const RoomSchema = new Schema({
     complaintDate:{type:String,require:true},
     Description:{type:String,require:true}
   })
+
+  const LightBillSchema = new mongoose.Schema({
+    roomNumber: { type: Number, required: true },  // ✅ Fixed 'Number'
+    Month: { type: String, required: true },  // ✅ Fixed 'String'
+    PreviousUnits: { type: Number, required: true },
+    CurrentUnits: { type: Number, required: true },
+    UnitConsumed: { type: Number },
+    BillAmount: { type: Number }
+});
+
+
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
 const userDetailModel = mongoose.model("UserDetails", UserDetailsSchema);
 const RoomModel = mongoose.model("RoomDetails",RoomSchema);
 const MenuModel = mongoose.model("Menu",MenuSchema);
-const ComplaintModel = mongoose.model("Complain",ComplaintSchema)
+const ComplaintModel = mongoose.model("Complain",ComplaintSchema);
+const LightBillModel = mongoose.model("LightBill",LightBillSchema);
 module.exports = {
   userModel,
   adminModel,
   userDetailModel,
   RoomModel,
   MenuModel,
-  ComplaintModel
+  ComplaintModel,
+  LightBillModel
 };

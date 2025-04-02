@@ -38,8 +38,12 @@ userRouter.post("/Login", async function (req, res) {
     });
   }
 });
+          
+// The issue is in your userRouter.put route
+// The error shows that MongoDB has an index on "Email" (capital E)
+// but your code is using "email" (lowercase e)
 
-userRouter.put("/updateProfile",userMiddleware, async function (req, res) {
+userRouter.put("/updateProfile", userMiddleware, async function (req, res) {
   const {
     userId,
     firstName,
@@ -54,16 +58,18 @@ userRouter.put("/updateProfile",userMiddleware, async function (req, res) {
     city,
     state,
     course,
-    semester,
-    email
+    semester
   } = req.body;
 
   try {
+    // Find the user by ID to get their email and room number
     const user = await userModel.findOne({ _id: userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Create update data object with user's email and room number from userModel
+    // Fix: Use "Email" (capital E) to match your MongoDB schema
     const updateData = {
       firstName,
       lastName,
@@ -78,33 +84,33 @@ userRouter.put("/updateProfile",userMiddleware, async function (req, res) {
       state,
       course,
       semester,
-      roomNumber: user.roomNumber,
-      email
-      
+      // Fix: Use "Email" instead of "email" to match your MongoDB schema
+      Email: user.email, // Make sure this matches the case in your MongoDB schema
+      roomNumber: user.roomNumber
     };
-   console.log(user);
-   console.log(updateData);
-   
-
-
-    if (user.email) {
-      updateData.email = user.email;
-    } 
-    console.log(updateData.email);
     
-    const userDetails = await userDetailModel.updateOne(
-      { userId:user._id },
+    console.log("User found:", user);
+    console.log("Update data:", updateData);
+    
+    // Update or create user details document
+    const userDetails = await userDetailModel.findOneAndUpdate(
+      { userId: user._id },
       { $set: updateData },
-      {  upsert: true }
+      { upsert: true, new: true } // Create if doesn't exist, return updated document
     );
     
-    
-    res.status(200).json({ message: "Profile updated successfully", userDetails });
+    res.status(200).json({ 
+      message: "Profile updated successfully", 
+      userDetails 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error updating profile", error: error.message });
+    console.error("Profile update error:", error);
+    res.status(500).json({ 
+      message: "Error updating profile", 
+      error: error.message 
+    });
   }
 });
-
 
 userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
   const { Subject, roomNumber, complaintDate, Description } = req.body;
@@ -157,6 +163,7 @@ userRouter.get("/GetMenu", async (req, res) => {
       res.status(500).json({ message: "Error fetching menu", error: error.message });
   }
 });
+
 
 
 module.exports = {

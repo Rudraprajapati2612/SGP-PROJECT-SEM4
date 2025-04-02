@@ -10,7 +10,7 @@ import { UpdateMenuModal } from "./modals/UpdateMenuModal"
 import { ManageFeesModal } from "./modals/ManageFeesModal"
 import { LightBillsModal } from "./modals/LightBillsModal"
 import { ViewComplaintsModal } from "./modals/ViewComplaintsModal"
-import StudentRegistration from "./StudentRegestration"
+import StudentRegistration from "./modals/StudentRegestration"
 
 
 
