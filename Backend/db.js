@@ -21,22 +21,23 @@ const AdminSchema = new Schema({
 
 
 const UserDetailsSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "UserCred", required: true }, // Reference to UserSchema
-  firstName: String,
-  lastName: String,
-  dateOfBirth: String,
+  userId: { type: Schema.Types.ObjectId, ref: "UserCred", required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  dateOfBirth: { type: String, required: true },
   bloodGroup: String,
-  contactNumber: String,
-  parentsContact: String,
+  contactNumber: { type: String, required: true },
+  parentsContact: { type: String, required: true },
   guardianContact: String,
-  emergencyContact: String,
-  address: String,
-  city: String,
-  state: String,
+  emergencyContact: { type: String, required: true },
+  address: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
   course: String,
   semester: String,
-  roomNumber: { type: Number }, // Non-editable field
-  email: { type: String, unique: true }
+  roomNumber: { type: Number },
+  // dateOfAdmission: String,
+  Email: { type: String, unique: true }
 });
 
 const MenuSchema = new Schema({

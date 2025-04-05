@@ -31,6 +31,7 @@ userRouter.post("/Login", async function (req, res) {
     );
     res.json({
       token,
+      // id: user._id.toString(),
     });
   } else {
     res.status(403).json({
@@ -58,7 +59,7 @@ userRouter.put("/updateProfile", userMiddleware, async function (req, res) {
     city,
     state,
     course,
-    semester
+    semester,
   } = req.body;
 
   try {
@@ -68,8 +69,7 @@ userRouter.put("/updateProfile", userMiddleware, async function (req, res) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Create update data object with user's email and room number from userModel
-    // Fix: Use "Email" (capital E) to match your MongoDB schema
+    // Create update data object
     const updateData = {
       firstName,
       lastName,
@@ -84,34 +84,33 @@ userRouter.put("/updateProfile", userMiddleware, async function (req, res) {
       state,
       course,
       semester,
-      // Fix: Use "Email" instead of "email" to match your MongoDB schema
-      Email: user.email, // Make sure this matches the case in your MongoDB schema
-      roomNumber: user.roomNumber
+      Email: user.email, // Matches the schema
+      roomNumber: user.roomNumber,
+      dateOfAdmission: user.dateOfAdmission || "N/A", // Fallback if not available
     };
-    
+
     console.log("User found:", user);
     console.log("Update data:", updateData);
-    
+
     // Update or create user details document
     const userDetails = await userDetailModel.findOneAndUpdate(
       { userId: user._id },
       { $set: updateData },
-      { upsert: true, new: true } // Create if doesn't exist, return updated document
+      { upsert: true, new: true }
     );
-    
-    res.status(200).json({ 
-      message: "Profile updated successfully", 
-      userDetails 
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      userDetails,
     });
   } catch (error) {
     console.error("Profile update error:", error);
-    res.status(500).json({ 
-      message: "Error updating profile", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error updating profile",
+      error: error.message,
     });
   }
 });
-
 userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
   const { Subject, roomNumber, complaintDate, Description } = req.body;
 
@@ -145,6 +144,22 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
   }
 });
 
+userRouter.get("/Users", userMiddleware, async (req, res) => {
+  console.log("Received GET request to /api/v1/user/user");
+  try {
+    const user = await userModel.findOne({ _id: req.userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      email: user.email,
+      roomNumber: user.roomNumber,
+      // dateOfAdmission: user.dateOfAdmission || "N/A",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user data", error: error.message });
+  }
+});
 userRouter.get("/GetMenu", async (req, res) => {
   const { date, MealType } = req.query;
   console.log("Query Params:", req.query);

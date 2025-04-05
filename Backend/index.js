@@ -7,7 +7,7 @@ const { adminRouter } = require("./routes/Admin");
 
 const app = express();
 
-// ✅ Proper CORS Configuration
+//  Proper CORS Configuration
 app.use(
   cors({
     origin: "http://localhost:5174", // Allow only your frontend

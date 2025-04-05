@@ -11,7 +11,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { text } = require("stream/consumers");
 const { console } = require("inspector");
-
+// api for sign up
 adminRouter.post("/Signup", async function (req, res) {
   const requireBody = z.object({
     firstName: z.string(),  // Change to match frontend
@@ -19,7 +19,7 @@ adminRouter.post("/Signup", async function (req, res) {
     email: z.string().email().max(100),
     password: z.string().min(5).max(30),
 });
-
+//  check for data vaildation 
   const parsedDataWithSuccess = requireBody.safeParse(req.body);
   if (!parsedDataWithSuccess.success) {
     return res.status(400).json({
@@ -51,7 +51,7 @@ await adminModel.create({
     });
   }
 });
-
+// api for login 
 adminRouter.post("/Login", async function (req, res) {
   const email = req.body.email;
   const password = req.body.password;
@@ -66,7 +66,7 @@ adminRouter.post("/Login", async function (req, res) {
     });
     return;
   }
-
+// hash a password and assign jwt token
   const passwordMatched = await bcrypt.compare(password, response.password);
   if (passwordMatched) {
     const token = jwt.sign(
@@ -154,7 +154,7 @@ adminRouter.get("/available-rooms", async (req, res) => {
 });
 
 
-// ✅ Student Registration with Room Allocation
+//  Student Registration with Room Allocation
 adminRouter.post("/StudentReg", adminMiddleware, async function (req, res) {
   const { email, Name, roomNumber } = req.body;
   if (!email || !Name || !roomNumber) {
@@ -316,7 +316,7 @@ adminRouter.post("/AddLightBill", adminMiddleware, async (req, res) => {
     if (!monthRegex.test(Month)) {
       return res.status(400).json({ message: "Month must be in YYYY-MM format (e.g., 2025-04)" });
     }
-
+// existing light bill check
     const existingBill = await LightBillModel.findOne({ roomNumber, Month });
     if (existingBill) {
       return res.status(400).json({ message: "Bill already exists for this room and month" });
@@ -357,20 +357,20 @@ adminRouter.post("/AddLightBill", adminMiddleware, async (req, res) => {
   }
 });
 
-// adminRouter.get("/AddLightBill", adminMiddleware, async (req, res) => {
-//   const { roomNumber } = req.query;
-//   try {
-//     if (roomNumber) {
-//       const previousBill = await LightBillModel.findOne({ roomNumber }).sort({ Month: -1 });
-//       res.status(200).json({ previousBill });
-//     } else {
-//       const bills = await LightBillModel.find();
-//       res.status(200).json({ bills });
-//     }
-//   } catch (error) {
-//     res.status(500).json({ error: "Error fetching bills" });
-//   }
-// });
+adminRouter.get("/AddLightBill", adminMiddleware, async (req, res) => {
+  const { roomNumber } = req.query;
+  try {
+    if (roomNumber) {
+      const previousBill = await LightBillModel.findOne({ roomNumber }).sort({ Month: -1 });
+      res.status(200).json({ previousBill });
+    } else {
+      const bills = await LightBillModel.find();
+      res.status(200).json({ bills });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching bills" });
+  }
+});
 
 
 

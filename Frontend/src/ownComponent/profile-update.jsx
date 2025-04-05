@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import { ArrowLeft, Save, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
+import { useState, useEffect } from "react";
+import { ArrowLeft, Save, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 /**
  * @param {Object} props
@@ -23,29 +25,123 @@ export default function ProfileUpdate({ onComplete }) {
     address: "",
     city: "",
     state: "",
-    email: "john.doe@example.com", // Pre-filled from login
+    email: "", // Will be fetched from backend
     dateOfBirth: "",
-    dateOfAdmission: "2023-08-15", // Pre-filled
-    roomNumber: "203", // Pre-filled
+    roomNumber: "", // Will be fetched from backend
     bloodGroup: "",
     emergencyContact: "",
     course: "",
     semester: "",
-  })
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [fetchingUser, setFetchingUser] = useState(true);
+
+  // Fetch user data (email, roomNumber) on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setFetchingUser(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No authentication token found. Please log in again.");
+        }
+
+        const response = await axios.get("http://localhost:3000/api/v1/user/Users", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const { email, roomNumber } = response.data;
+        setFormData((prev) => ({
+          ...prev,
+          email: email || "",
+          roomNumber: roomNumber || "",
+        }));
+      } catch (err) {
+        const errorMessage = err.response?.data?.message || "Failed to fetch user data. Please try again.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        if (err.response?.status === 404) {
+          // If user not found, clear token and redirect to login
+          localStorage.removeItem("token");
+          window.location.href = "/StudentDashboard"; // Adjust based on your routing setup
+        }
+      } finally {
+        setFetchingUser(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // In a real app, you would save the data to the server here
-    onComplete()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found. Please log in again.");
+      }
+
+      // Prepare the data to send to the backend
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        bloodGroup: formData.bloodGroup,
+        contactNumber: formData.contactNumber,
+        parentsContact: formData.parentsContactNumber,
+        guardianContact: formData.guardianContactNumber,
+        emergencyContact: formData.emergencyContact,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        course: formData.course,
+        semester: formData.semester,
+      };
+
+      const response = await axios.put(
+        "http://localhost:3000/api/v1/user/updateProfile",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      toast.success("Profile updated successfully!");
+      onComplete(); // Redirect or proceed after successful update
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Failed to update profile. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (fetchingUser) {
+    return (
+      <div className="min-h-screen bg-[#0F1117] text-white flex items-center justify-center">
+        <p>Loading user data...</p>
+      </div>
+    );
   }
 
   return (
@@ -81,6 +177,11 @@ export default function ProfileUpdate({ onComplete }) {
             </div>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-400 rounded">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal Information Section */}
               <div>
@@ -349,27 +450,17 @@ export default function ProfileUpdate({ onComplete }) {
                       className="bg-[#0F1117]/50 border-gray-800 text-gray-400"
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfAdmission" className="text-gray-300">
-                      Date of Admission
-                    </Label>
-                    <Input
-                      id="dateOfAdmission"
-                      name="dateOfAdmission"
-                      type="date"
-                      value={formData.dateOfAdmission}
-                      disabled
-                      className="bg-[#0F1117]/50 border-gray-800 text-gray-400"
-                    />
-                  </div>
                 </div>
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button type="submit" className="flex items-center gap-2 bg-[#6C5DD3] hover:bg-[#5B4DC3] text-white">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex items-center gap-2 bg-[#6C5DD3] hover:bg-[#5B4DC3] text-white disabled:opacity-50"
+                >
                   <Save className="h-4 w-4" />
-                  <span>Save Profile</span>
+                  <span>{loading ? "Saving..." : "Save Profile"}</span>
                 </Button>
               </div>
             </form>
@@ -377,6 +468,5 @@ export default function ProfileUpdate({ onComplete }) {
         </Card>
       </main>
     </div>
-  )
+  );
 }
-
