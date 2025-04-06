@@ -1,9 +1,11 @@
 require("dotenv").config();
 const { Router } = require("express");
 const adminRouter = Router();
-const { adminModel, userDetailModel, userModel, RoomModel,MenuModel,ComplaintModel,LightBillModel } = require("../db");
+const { adminModel,  userModel, RoomModel,MenuModel,ComplaintModel,LightBillModel } = require("../db");
 const { z } = require("zod");
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
+
 const jwt = require("jsonwebtoken");
 const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminMiddleware } = require("../middleware/adminMid");

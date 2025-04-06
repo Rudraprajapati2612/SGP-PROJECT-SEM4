@@ -2,10 +2,16 @@ const { Router } = require("express");
 const userRouter = Router();
 const { z } = require("zod");
 const { userModel, userDetailModel,ComplaintModel,RoomModel,MenuModel } = require("../db");
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
+
 const jwt = require("jsonwebtoken");
 const { JWT_USER_PASSWORD } = require("../config");
 const{userMiddleware} = require("../middleware/userMid")
+
+
+
+
 userRouter.post("/Login", async function (req, res) {
   const email = req.body.email;
   const password = req.body.password;
@@ -39,10 +45,32 @@ userRouter.post("/Login", async function (req, res) {
     });
   }
 });
-          
+
+
+
+
+userRouter.get("/checkProfile", userMiddleware, async (req, res) => {
+  try {
+    const userDetails = await userDetailModel.findOne({ userId: req.userId });
+    res.status(200).json({
+      profileExists: !!userDetails,
+      email: userDetails?.Email || (await userModel.findById(req.userId)).email,
+      roomNumber: userDetails?.roomNumber || (await userModel.findById(req.userId)).roomNumber
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error checking profile", 
+      error: error.message 
+    });
+  }
+});   
 // The issue is in your userRouter.put route
 // The error shows that MongoDB has an index on "Email" (capital E)
 // but your code is using "email" (lowercase e)
+
+
+
+
 
 userRouter.put("/updateProfile", userMiddleware, async function (req, res) {
   const {
@@ -144,22 +172,32 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
   }
 });
 
-userRouter.get("/Users", userMiddleware, async (req, res) => {
-  console.log("Received GET request to /api/v1/user/user");
-  try {
-    const user = await userModel.findOne({ _id: req.userId });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json({
-      email: user.email,
-      roomNumber: user.roomNumber,
-      // dateOfAdmission: user.dateOfAdmission || "N/A",
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching user data", error: error.message });
-  }
-});
+
+
+
+
+// userRouter.get("/Users", userMiddleware, async (req, res) => {
+//   console.log("Received GET request to /api/v1/user/user");
+//   try {
+//     const user = await userModel.findOne({ _id: req.userId });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     res.status(200).json({
+//       email: user.email,
+//       roomNumber: user.roomNumber,
+//       // dateOfAdmission: user.dateOfAdmission || "N/A",
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching user data", error: error.message });
+//   }
+// });
+
+
+
+
+
+
 userRouter.get("/GetMenu", async (req, res) => {
   const { date, MealType } = req.query;
   console.log("Query Params:", req.query);

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Bed, Users, Receipt, Bolt, Utensils, AlertCircle, Moon, Sun, Plus } from "lucide-react"
+import { Search, Bed, Users, Receipt, Bolt, Utensils, AlertCircle, Moon, Sun, Plus, Megaphone,UserCheck } from "lucide-react"
 import { DashboardCard } from "./DashboardCard"
 import { ModalContainer } from "./ModalContainer"
 import { AddRoomModal } from "./modals/AddRoomModal"
@@ -10,17 +10,17 @@ import { UpdateMenuModal } from "./modals/UpdateMenuModal"
 import { ManageFeesModal } from "./modals/ManageFeesModal"
 import { LightBillsModal } from "./modals/LightBillsModal"
 import { ViewComplaintsModal } from "./modals/ViewComplaintsModal"
+// import { AnnouncementModal } from "./modals/AnnouncementModal"
+import AnnouncementTab from "./modals/AnnouncementTab"
+import { ViewStudentDetailsModal } from "./modals/ViewStudentDetailsModal"
 import StudentRegistration from "./modals/StudentRegestration"
-
-
-
 
 export default function AdminDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [activeModal, setActiveModal] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  
+
   // Sample data
   const rooms = [
     { id: 1, roomNumber: "101", capacity: 4, occupied: 3, status: "Occupied" },
@@ -94,20 +94,20 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold text-[#6C5DD3] mb-4 md:mb-0">Admin Dashboard</h1>
         <div className="flex items-center space-x-4">
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
+            {/* <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} /> */}
+            {/* <input
               className="pl-10 pr-4 py-2 bg-[#1A1D29] text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6C5DD3] w-full"
               placeholder="Search students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            /> */}
           </div>
-          <button
+          {/* <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="p-2 rounded-full bg-[#1A1D29] hover:bg-[#2A2D39] transition-colors"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -139,12 +139,26 @@ export default function AdminDashboard() {
           onClick={() => setActiveModal("updateMenu")}
         />
 
-        {/* Assign Students Card */}
+        {/* Register Student Card */}
         <DashboardCard
           icon={<Users className="text-[#6C5DD3]" size={24} />}
           title="Register Student"
           subtitle="Create new student account"
           onClick={() => setActiveModal("registerStudent")}
+        />
+          {/* View Student Details Card - NEW */}
+          <DashboardCard
+          icon={<UserCheck className="text-[#6C5DD3]" size={24} />}
+          title="Student Details"
+          subtitle="View and manage student information"
+          onClick={() => setActiveModal("viewStudentDetails")}
+        />
+        {/* Announcements Card - NEW */}
+        <DashboardCard
+          icon={<Megaphone className="text-[#6C5DD3]" size={24} />}
+          title="Announcements"
+          subtitle="Create hostel announcements"
+          onClick={() => setActiveModal("announcement")}
         />
 
         {/* Manage Fees Card */}
@@ -196,7 +210,14 @@ export default function AdminDashboard() {
           <StudentRegistration onBack={() => setActiveModal(null)} />
         </div>
       </ModalContainer>
-
+      <ModalContainer isOpen={activeModal === "viewStudentDetails"}>
+        <ViewStudentDetailsModal onClose={() => setActiveModal(null)} />
+      </ModalContainer>
+      {/* Announcement Modal - NEW */}
+      <ModalContainer isOpen={activeModal === "announcement"}>
+        <AnnouncementTab onClose={() => setActiveModal(null)} />
+      </ModalContainer>
+      
       <ModalContainer isOpen={activeModal === "manageFees"}>
         <ManageFeesModal fees={fees} onClose={() => setActiveModal(null)} />
       </ModalContainer>

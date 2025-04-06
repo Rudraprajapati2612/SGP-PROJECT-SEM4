@@ -9,7 +9,8 @@ const UserSchema = new Schema({
   Name: String,
   email: { type: String, unique: true },
   password: String,
-  roomNumber : {type:Number ,require:true}
+  roomNumber : {type:Number ,require:true},
+  isProfileUpdated: { type: Boolean, default: false },
 });
 
 const AdminSchema = new Schema({
@@ -37,7 +38,8 @@ const UserDetailsSchema = new Schema({
   semester: String,
   roomNumber: { type: Number },
   // dateOfAdmission: String,
-  Email: { type: String, unique: true }
+  Email: { type: String, unique: true },
+  
 });
 
 const MenuSchema = new Schema({
@@ -68,6 +70,11 @@ const RoomSchema = new Schema({
     BillAmount: { type: Number }
 });
 
+  const AnnouncementSchema = new Schema ({
+    AnnouncementTitle : {type :String,require :true},
+    AnnouncementDate : {type :String,require :true},
+    Description : {type :String,require :true}
+  });
 
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   CreditCard,
   Utensils,
@@ -13,67 +13,48 @@ import {
   Calendar,
   ChevronDown,
 } from "lucide-react"
-import ProfileUpdate from "./profile-update"
+import ProfileUpdate from "./ProfileUpdate"
 
-// Main Dashboard Component
 const StudentDashboard = () => {
   const [activeModal, setActiveModal] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const [isFirstLogin, setIsFirstLogin] = useState(true)
   const [showProfile, setShowProfile] = useState(false)
   const [complaintDate, setComplaintDate] = useState(new Date().toISOString().split("T")[0])
 
-  // Sample room numbers for the dropdown
   const roomNumbers = ["101", "102", "103", "201", "202", "203", "301", "302", "303"]
 
-  // Sample menu data
   const menuData = {
     breakfast: "Idli, Sambar, Chutney, Fruit Juice",
     lunch: "Rice, Dal, Mixed Vegetables, Curd, Salad",
     dinner: "Chapati, Paneer Curry, Pulao, Sweet",
   }
 
-  // Sample bill history with unpaid bill
   const billHistory = [
     { month: "April 2024", amount: "₹920", status: "Unpaid", units: 184, dueDate: "April 30, 2024" },
     { month: "March 2024", amount: "₹850", status: "Paid", units: 170 },
     { month: "February 2024", amount: "₹780", status: "Paid", units: 156 },
   ]
 
-  // Check if first login and redirect to profile
-  useEffect(() => {
-    if (isFirstLogin) {
-      setShowProfile(true)
-    }
-  }, [isFirstLogin])
-
   const closeModal = () => setActiveModal(null)
 
-  // If showing profile, render the profile page
   if (showProfile) {
     return (
       <ProfileUpdate
-        onComplete={() => {
-          setIsFirstLogin(false)
-          setShowProfile(false)
-        }}
+        onComplete={() => setShowProfile(false)}
       />
     )
   }
 
   return (
     <div className="min-h-screen bg-[#0F1117] text-white">
-      {/* Header */}
       <header className="bg-[#161927] border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-[#6C5DD3]">Student Dashboard</h1>
-
           <div className="flex items-center space-x-4">
             <button className="p-2 rounded-full hover:bg-gray-800 transition-colors relative">
               <Bell size={20} className="text-gray-400" />
               <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
             </button>
-
             <div className="relative group">
               <button className="flex items-center space-x-2 py-1 px-2 rounded-lg hover:bg-gray-800 transition-colors">
                 <div className="h-8 w-8 rounded-full bg-[#6C5DD3] flex items-center justify-center">
@@ -82,7 +63,6 @@ const StudentDashboard = () => {
                 <span>John Doe</span>
                 <ChevronDown size={16} className="text-gray-400" />
               </button>
-
               <div className="absolute right-0 mt-2 w-48 bg-[#161927] border border-gray-800 rounded-lg shadow-lg overflow-hidden invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <div className="p-3 border-b border-gray-800">
                   <p className="text-sm font-medium">John Doe</p>
@@ -111,10 +91,8 @@ const StudentDashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Fee Status Card */}
           <div className="bg-[#1A1D29] rounded-xl border border-gray-800 overflow-hidden hover:border-[#6C5DD3]/30 transition-all duration-300 shadow-lg">
             <div className="p-5">
               <div className="flex items-center space-x-3 mb-4">
@@ -123,7 +101,6 @@ const StudentDashboard = () => {
                 </div>
                 <h2 className="text-xl font-semibold">Fee Status</h2>
               </div>
-
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Total Fee:</span>
@@ -139,7 +116,6 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-
             <button
               onClick={() => setActiveModal("payment")}
               className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-3 font-medium transition-colors"
@@ -148,7 +124,6 @@ const StudentDashboard = () => {
             </button>
           </div>
 
-          {/* View Menu Card */}
           <div
             onClick={() => setActiveModal("menu")}
             className="bg-[#1A1D29] rounded-xl border border-gray-800 p-5 hover:border-[#6C5DD3]/30 transition-all duration-300 shadow-lg cursor-pointer"
@@ -159,7 +134,6 @@ const StudentDashboard = () => {
               </div>
               <h2 className="text-xl font-semibold">View Menu</h2>
             </div>
-
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Calendar size={16} className="text-gray-400" />
@@ -169,7 +143,6 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Light Bill Card */}
           <div
             onClick={() => setActiveModal("bill")}
             className="bg-[#1A1D29] rounded-xl border border-gray-800 p-5 hover:border-[#6C5DD3]/30 transition-all duration-300 shadow-lg cursor-pointer"
@@ -180,7 +153,6 @@ const StudentDashboard = () => {
               </div>
               <h2 className="text-xl font-semibold">Light Bill</h2>
             </div>
-
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-400">Current Month:</span>
@@ -195,7 +167,6 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Raise Complaint Card */}
           <div
             onClick={() => setActiveModal("complaint")}
             className="bg-[#1A1D29] rounded-xl border border-gray-800 p-5 hover:border-[#6C5DD3]/30 transition-all duration-300 shadow-lg cursor-pointer md:col-span-2 lg:col-span-3"
@@ -206,17 +177,14 @@ const StudentDashboard = () => {
               </div>
               <h2 className="text-xl font-semibold">Raise Complaint</h2>
             </div>
-
             <p className="text-gray-400">Submit your concerns anonymously</p>
           </div>
         </div>
       </main>
 
-      {/* Modals */}
       {activeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1A1D29] rounded-xl border border-gray-800 max-w-md w-full max-h-[90vh] overflow-auto">
-            {/* Payment Modal */}
             {activeModal === "payment" && (
               <div>
                 <div className="p-5 border-b border-gray-800">
@@ -249,7 +217,6 @@ const StudentDashboard = () => {
               </div>
             )}
 
-            {/* Menu Modal */}
             {activeModal === "menu" && (
               <div>
                 <div className="p-5 border-b border-gray-800">
@@ -265,20 +232,17 @@ const StudentDashboard = () => {
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     />
                   </div>
-
                   <div className="space-y-4 pt-2">
                     <div className="bg-[#0F1117] rounded-lg p-4">
                       <h4 className="font-medium mb-1">Breakfast</h4>
                       <p className="text-sm text-gray-400 mb-2">7:00 AM - 9:00 AM</p>
                       <p className="text-sm">{menuData.breakfast}</p>
                     </div>
-
                     <div className="bg-[#0F1117] rounded-lg p-4">
                       <h4 className="font-medium mb-1">Lunch</h4>
                       <p className="text-sm text-gray-400 mb-2">12:30 PM - 2:30 PM</p>
                       <p className="text-sm">{menuData.lunch}</p>
                     </div>
-
                     <div className="bg-[#0F1117] rounded-lg p-4">
                       <h4 className="font-medium mb-1">Dinner</h4>
                       <p className="text-sm text-gray-400 mb-2">7:30 PM - 9:30 PM</p>
@@ -289,7 +253,6 @@ const StudentDashboard = () => {
               </div>
             )}
 
-            {/* Bill Modal */}
             {activeModal === "bill" && (
               <div>
                 <div className="p-5 border-b border-gray-800">
@@ -310,7 +273,6 @@ const StudentDashboard = () => {
                           </p>
                         </div>
                       </div>
-
                       {bill.status === "Unpaid" && (
                         <div className="mt-3 pt-3 border-t border-gray-800">
                           <div className="flex justify-between items-center text-sm mb-2">
@@ -328,7 +290,6 @@ const StudentDashboard = () => {
               </div>
             )}
 
-            {/* Complaint Modal - UPDATED */}
             {activeModal === "complaint" && (
               <div>
                 <div className="p-5 border-b border-gray-800">
@@ -343,8 +304,6 @@ const StudentDashboard = () => {
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     />
                   </div>
-
-                  {/* Added Room Number Selection */}
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Room Number</label>
                     <select className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]">
@@ -356,8 +315,6 @@ const StudentDashboard = () => {
                       ))}
                     </select>
                   </div>
-
-                  {/* Added Date Picker */}
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Date of Issue</label>
                     <input
@@ -367,7 +324,6 @@ const StudentDashboard = () => {
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Description</label>
                     <textarea
@@ -375,7 +331,6 @@ const StudentDashboard = () => {
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 h-32 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     ></textarea>
                   </div>
-
                   <div className="pt-4">
                     <button className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-2 rounded-lg font-medium transition-colors">
                       Submit Complaint
@@ -385,7 +340,6 @@ const StudentDashboard = () => {
               </div>
             )}
 
-            {/* Close Button */}
             <div className="p-5 border-t border-gray-800 flex justify-end">
               <button
                 onClick={closeModal}
@@ -402,4 +356,3 @@ const StudentDashboard = () => {
 }
 
 export default StudentDashboard
-
