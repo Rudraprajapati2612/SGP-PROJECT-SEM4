@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Bed, Users, Receipt, Bolt, Utensils, AlertCircle, Moon, Sun, Plus, Megaphone,UserCheck } from "lucide-react"
+import { Bed, Users, Receipt, Bolt, Utensils, AlertCircle, Plus, Megaphone, UserCheck } from "lucide-react"
 import { DashboardCard } from "./DashboardCard"
 import { ModalContainer } from "./ModalContainer"
 import { AddRoomModal } from "./modals/AddRoomModal"
@@ -59,11 +59,11 @@ export default function AdminDashboard() {
   ]
 
   const fees = [
-    { id: 1, studentId: "ST001", name: "John Doe", room: "101", amount: "₹50,000", status: "Paid", date: "2024-02-15" },
+    { id: 1, studentId: "ST001", name: "Rudra Prajapati", room: "101", amount: "₹50,000", status: "Paid", date: "2024-02-15" },
     {
       id: 2,
       studentId: "ST002",
-      name: "Jane Smith",
+      name: "Parva Shah",
       room: "102",
       amount: "₹50,000",
       status: "Partial",
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
     {
       id: 3,
       studentId: "ST003",
-      name: "Mike Johnson",
+      name: "Om Prajapati",
       room: "103",
       amount: "₹50,000",
       status: "Unpaid",
@@ -146,8 +146,8 @@ export default function AdminDashboard() {
           subtitle="Create new student account"
           onClick={() => setActiveModal("registerStudent")}
         />
-          {/* View Student Details Card - NEW */}
-          <DashboardCard
+        {/* View Student Details Card - NEW */}
+        <DashboardCard
           icon={<UserCheck className="text-[#6C5DD3]" size={24} />}
           title="Student Details"
           subtitle="View and manage student information"
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
 
       <ModalContainer isOpen={activeModal === "registerStudent"}>
         <div className="p-5">
-          <StudentRegistration onBack={() => setActiveModal(null)} />
+          <StudentRegistration onClose={() => setActiveModal(null)} />
         </div>
       </ModalContainer>
       <ModalContainer isOpen={activeModal === "viewStudentDetails"}>
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
       <ModalContainer isOpen={activeModal === "announcement"}>
         <AnnouncementTab onClose={() => setActiveModal(null)} />
       </ModalContainer>
-      
+
       <ModalContainer isOpen={activeModal === "manageFees"}>
         <ManageFeesModal fees={fees} onClose={() => setActiveModal(null)} />
       </ModalContainer>

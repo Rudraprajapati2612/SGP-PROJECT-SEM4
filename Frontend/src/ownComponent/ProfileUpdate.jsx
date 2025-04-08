@@ -27,7 +27,7 @@ export default function ProfileUpdate() {
     state: "",
     email: location.state?.email || "",
     dateOfBirth: "",
-    dateOfAdmission: "2023-08-15",
+    // dateOfAdmission: "2023-08-15",
     roomNumber: location.state?.roomNumber || "",
     bloodGroup: "",
     emergencyContact: "",
@@ -343,17 +343,7 @@ export default function ProfileUpdate() {
                       className="bg-[#0F1117]/50 border-gray-800 text-gray-400"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfAdmission" className="text-gray-300">Date of Admission</Label>
-                    <Input
-                      id="dateOfAdmission"
-                      name="dateOfAdmission"
-                      type="date"
-                      value={formData.dateOfAdmission}
-                      disabled
-                      className="bg-[#0F1117]/50 border-gray-800 text-gray-400"
-                    />
-                  </div>
+                  
                 </div>
               </div>
 

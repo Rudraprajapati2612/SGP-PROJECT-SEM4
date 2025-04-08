@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Clock, Search, X, XCircle } from "lucide-react";
+import { CheckCircle, Clock, Search, X, XCircle } from 'lucide-react';
 
 export function ViewComplaintsModal({ onClose }) {
   const [complaints, setComplaints] = useState([]);
@@ -13,13 +13,14 @@ export function ViewComplaintsModal({ onClose }) {
 
   useEffect(() => {
     const fetchComplaints = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No admin token found.");
+        setLoading(false);
+        return;
+      }
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("No admin token found.");
-          setLoading(false);
-          return;
-        }
+       
 
         const response = await fetch("http://localhost:3000/api/v1/admin/GetComplaints", {
           method: "GET",
@@ -51,8 +52,8 @@ export function ViewComplaintsModal({ onClose }) {
 
   // Function to filter complaints based on search
   const filteredComplaints = complaints.filter((complaint) =>
-    complaint.roomNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    complaint.Subject.toLowerCase().includes(searchQuery.toLowerCase())
+    complaint.roomNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    complaint.Subject?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Function to resolve a complaint
@@ -87,28 +88,45 @@ export function ViewComplaintsModal({ onClose }) {
     }
   };
 
+  // Function to format date (if available)
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString; // Return original if invalid date
+      return date.toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-[#0F1117] w-[90%] max-w-2xl rounded-lg shadow-lg overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-800">
+      <div className="bg-[#0F1117] w-[90%] max-w-2xl rounded-lg shadow-lg flex flex-col max-h-[90vh]">
+        {/* Fixed Modal Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-800 sticky top-0 bg-[#0F1117] z-10">
           <h3 className="text-xl font-bold text-white">Active Complaints</h3>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-800 transition">
             <X size={20} className="text-gray-300" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-5">
+        {/* Scrollable Modal Body */}
+        <div className="p-5 overflow-y-auto flex-1">
           {loading ? (
-            <p className="text-gray-400">Loading complaints...</p>
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#6C5DD3]"></div>
+            </div>
           ) : error ? (
-            <p className="text-red-500">{error}</p>
+            <div className="bg-red-500/10 text-red-400 p-4 rounded-lg">
+              <p>{error}</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {/* Search & Filter (Always Visible) */}
-              <div className="flex justify-between items-center mb-4">
-                <div className="relative w-64">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-4 sticky top-0 bg-[#0F1117] pt-1 pb-3 z-10">
+                <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <Input
                     placeholder="Search by Room No. or Subject..."
@@ -127,7 +145,10 @@ export function ViewComplaintsModal({ onClose }) {
 
               {/* No Complaints Found Message */}
               {filteredComplaints.length === 0 ? (
-                <p className="text-gray-400 text-center">No complaints found. Try a different search.</p>
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <XCircle size={40} className="text-gray-500 mb-3" />
+                  <p className="text-gray-400">No complaints found. Try a different search.</p>
+                </div>
               ) : (
                 /* Complaints List */
                 <div className="space-y-4">
@@ -137,22 +158,22 @@ export function ViewComplaintsModal({ onClose }) {
                       className="rounded-lg border border-gray-800 p-4 hover:border-[#6C5DD3]/30 transition-all"
                     >
                       {/* Complaint Header */}
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2 mb-2">
                         <div>
                           <h4 className="font-medium text-white">{complaint.Subject || "No Title"}</h4>
-                          <div className="flex items-center space-x-3 text-sm text-gray-400 mt-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
                             <span>Room: {complaint.roomNumber || "Unknown"}</span>
-                            <span>•</span>
-                            <span>{complaint.Date || complaint.complaintDate || "N/A"}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span>{formatDate(complaint.Date || complaint.complaintDate)}</span>
                           </div>
                         </div>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                             complaint.status === "Pending"
                               ? "bg-orange-500/20 text-orange-400"
                               : complaint.status === "Resolved"
-                              ? "bg-green-500/20 text-green-400"
-                              : "bg-red-500/20 text-red-400"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
                           }`}
                         >
                           {complaint.status || "Pending"}
@@ -160,10 +181,12 @@ export function ViewComplaintsModal({ onClose }) {
                       </div>
 
                       {/* Complaint Description */}
-                      <p className="text-sm text-gray-300 mb-4">{complaint.Description || "No description provided."}</p>
+                      <p className="text-sm text-gray-300 mb-4">
+                        {complaint.Description || "No description provided."}
+                      </p>
 
                       {/* Actions */}
-                      <div className="flex justify-end space-x-2">
+                      <div className="flex flex-wrap justify-end gap-2">
                         <Button
                           size="sm"
                           variant="outline"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   CreditCard,
   Utensils,
@@ -14,20 +14,29 @@ import {
   ChevronDown,
 } from "lucide-react"
 import ProfileUpdate from "./ProfileUpdate"
+import axios from "axios"
 
 const StudentDashboard = () => {
   const [activeModal, setActiveModal] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
   const [showProfile, setShowProfile] = useState(false)
   const [complaintDate, setComplaintDate] = useState(new Date().toISOString().split("T")[0])
+  const [menuData, setMenuData] = useState({
+    breakfast: "",
+    lunch: "",
+    dinner: "",
+  })
+  const [loadingMenu, setLoadingMenu] = useState(false)
+  const [complaintForm, setComplaintForm] = useState({
+    Subject: "",
+    roomNumber: "",
+    complaintDate: new Date().toISOString().split("T")[0],
+    Description: "",
+  })
+  const [submittingComplaint, setSubmittingComplaint] = useState(false)
+  const [complaintSuccess, setComplaintSuccess] = useState(false)
 
   const roomNumbers = ["101", "102", "103", "201", "202", "203", "301", "302", "303"]
-
-  const menuData = {
-    breakfast: "Idli, Sambar, Chutney, Fruit Juice",
-    lunch: "Rice, Dal, Mixed Vegetables, Curd, Salad",
-    dinner: "Chapati, Paneer Curry, Pulao, Sweet",
-  }
 
   const billHistory = [
     { month: "April 2024", amount: "₹920", status: "Unpaid", units: 184, dueDate: "April 30, 2024" },
@@ -35,14 +44,103 @@ const StudentDashboard = () => {
     { month: "February 2024", amount: "₹780", status: "Paid", units: 156 },
   ]
 
-  const closeModal = () => setActiveModal(null)
+  const closeModal = () => {
+    setActiveModal(null)
+    setComplaintSuccess(false)
+    setComplaintForm({
+      Subject: "",
+      roomNumber: "",
+      complaintDate: new Date().toISOString().split("T")[0],
+      Description: "",
+    })
+  }
+
+  const fetchMenu = async (date) => {
+    setLoadingMenu(true)
+    console.log("Fetching menu for date:", date)
+    try {
+      const mealTypes = ["Breakfast", "Lunch", "Dinner"]
+      const menuPromises = mealTypes.map((mealType) =>
+        axios.get("http://localhost:3000/api/v1/user/GetMenu", {
+          params: { date, MealType: mealType },
+        }).catch((error) => {
+          console.error(`Error fetching ${mealType}:`, error.response?.data || error)
+          return { data: { menu: null } }
+        })
+      )
+
+      const responses = await Promise.all(menuPromises)
+      const newMenuData = {
+        breakfast: responses[0].data.menu?.items || "Menu not available",
+        lunch: responses[1].data.menu?.items || "Menu not available",
+        dinner: responses[2].data.menu?.items || "Menu not available",
+      }
+      console.log("Menu data fetched:", newMenuData)
+      setMenuData(newMenuData)
+    } catch (error) {
+      console.error("Unexpected error fetching menu:", error)
+      setMenuData({
+        breakfast: "Error loading menu",
+        lunch: "Error loading menu",
+        dinner: "Error loading menu",
+      })
+    } finally {
+      setLoadingMenu(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeModal === "menu") {
+      fetchMenu(selectedDate)
+    }
+  }, [selectedDate, activeModal])
+
+  const handleComplaintChange = (e) => {
+    const { name, value } = e.target
+    setComplaintForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleComplaintSubmit = async (e) => {
+    e.preventDefault()
+    setSubmittingComplaint(true)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authorization token is missing. Please log in again.");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/user/AddComplaint",
+        complaintForm,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            // Add Authorization header if userMiddleware requires a token
+            // Authorization: `Bearer ${yourToken}`
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      )
+
+      setComplaintSuccess(true)
+      console.log("Complaint submitted:", response.data)
+
+      setTimeout(() => {
+        closeModal()
+      }, 2000)
+    } catch (error) {
+      console.error("Error submitting complaint:", error.response?.data || error)
+      alert(error.response?.data?.message || "Error submitting complaint")
+    } finally {
+      setSubmittingComplaint(false)
+    }
+  }
 
   if (showProfile) {
-    return (
-      <ProfileUpdate
-        onComplete={() => setShowProfile(false)}
-      />
-    )
+    return <ProfileUpdate onComplete={() => setShowProfile(false)} />
   }
 
   return (
@@ -60,12 +158,12 @@ const StudentDashboard = () => {
                 <div className="h-8 w-8 rounded-full bg-[#6C5DD3] flex items-center justify-center">
                   <User size={16} />
                 </div>
-                <span>John Doe</span>
+                <span>Rudra Prajapati</span>
                 <ChevronDown size={16} className="text-gray-400" />
               </button>
               <div className="absolute right-0 mt-2 w-48 bg-[#161927] border border-gray-800 rounded-lg shadow-lg overflow-hidden invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <div className="p-3 border-b border-gray-800">
-                  <p className="text-sm font-medium">John Doe</p>
+                  <p className="text-sm font-medium">Rudra Prajapati</p>
                   <p className="text-xs text-gray-400">Room 203</p>
                 </div>
                 <div className="p-1">
@@ -220,7 +318,7 @@ const StudentDashboard = () => {
             {activeModal === "menu" && (
               <div>
                 <div className="p-5 border-b border-gray-800">
-                  <h3 className="text-xl font-semibold">Today's Menu</h3>
+                  <h3 className="text-xl font-semibold">Menu for {selectedDate}</h3>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="space-y-2">
@@ -233,21 +331,27 @@ const StudentDashboard = () => {
                     />
                   </div>
                   <div className="space-y-4 pt-2">
-                    <div className="bg-[#0F1117] rounded-lg p-4">
-                      <h4 className="font-medium mb-1">Breakfast</h4>
-                      <p className="text-sm text-gray-400 mb-2">7:00 AM - 9:00 AM</p>
-                      <p className="text-sm">{menuData.breakfast}</p>
-                    </div>
-                    <div className="bg-[#0F1117] rounded-lg p-4">
-                      <h4 className="font-medium mb-1">Lunch</h4>
-                      <p className="text-sm text-gray-400 mb-2">12:30 PM - 2:30 PM</p>
-                      <p className="text-sm">{menuData.lunch}</p>
-                    </div>
-                    <div className="bg-[#0F1117] rounded-lg p-4">
-                      <h4 className="font-medium mb-1">Dinner</h4>
-                      <p className="text-sm text-gray-400 mb-2">7:30 PM - 9:30 PM</p>
-                      <p className="text-sm">{menuData.dinner}</p>
-                    </div>
+                    {loadingMenu ? (
+                      <p className="text-center text-gray-400">Loading menu...</p>
+                    ) : (
+                      <>
+                        <div className="bg-[#0F1117] rounded-lg p-4">
+                          <h4 className="font-medium mb-1">Breakfast</h4>
+                          <p className="text-sm text-gray-400 mb-2">7:00 AM - 9:00 AM</p>
+                          <p className="text-sm">{menuData.breakfast}</p>
+                        </div>
+                        <div className="bg-[#0F1117] rounded-lg p-4">
+                          <h4 className="font-medium mb-1">Lunch</h4>
+                          <p className="text-sm text-gray-400 mb-2">12:30 PM - 2:30 PM</p>
+                          <p className="text-sm">{menuData.lunch}</p>
+                        </div>
+                        <div className="bg-[#0F1117] rounded-lg p-4">
+                          <h4 className="font-medium mb-1">Dinner</h4>
+                          <p className="text-sm text-gray-400 mb-2">7:30 PM - 9:30 PM</p>
+                          <p className="text-sm">{menuData.dinner}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -295,18 +399,28 @@ const StudentDashboard = () => {
                 <div className="p-5 border-b border-gray-800">
                   <h3 className="text-xl font-semibold">Submit Complaint</h3>
                 </div>
-                <div className="p-5 space-y-4">
+                <form onSubmit={handleComplaintSubmit} className="p-5 space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Subject</label>
                     <input
                       type="text"
+                      name="Subject"
+                      value={complaintForm.Subject}
+                      onChange={handleComplaintChange}
                       placeholder="Enter complaint subject"
+                      required
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Room Number</label>
-                    <select className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]">
+                    <select
+                      name="roomNumber"
+                      value={complaintForm.roomNumber}
+                      onChange={handleComplaintChange}
+                      required
+                      className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
+                    >
                       <option value="">Select Room Number</option>
                       {roomNumbers.map((room) => (
                         <option key={room} value={room}>
@@ -319,35 +433,54 @@ const StudentDashboard = () => {
                     <label className="text-sm text-gray-400">Date of Issue</label>
                     <input
                       type="date"
-                      value={complaintDate}
-                      onChange={(e) => setComplaintDate(e.target.value)}
+                      name="complaintDate"
+                      value={complaintForm.complaintDate}
+                      onChange={handleComplaintChange}
+                      required
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm text-gray-400">Description</label>
                     <textarea
+                      name="Description"
+                      value={complaintForm.Description}
+                      onChange={handleComplaintChange}
                       placeholder="Describe your issue in detail"
+                      required
                       className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 h-32 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
                     ></textarea>
                   </div>
                   <div className="pt-4">
-                    <button className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-2 rounded-lg font-medium transition-colors">
-                      Submit Complaint
+                    <button
+                      type="submit"
+                      disabled={submittingComplaint}
+                      className={`w-full py-2 rounded-lg font-medium transition-colors ${
+                        submittingComplaint
+                          ? "bg-gray-600 cursor-not-allowed"
+                          : complaintSuccess
+                          ? "bg-green-500"
+                          : "bg-[#6C5DD3] hover:bg-[#5B4DC3]"
+                      }`}
+                    >
+                      {submittingComplaint
+                        ? "Submitting..."
+                        : complaintSuccess
+                        ? "Complaint Submitted!"
+                        : "Submit Complaint"}
                     </button>
                   </div>
+                </form>
+                <div className="p-5 border-t border-gray-800 flex justify-end">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
             )}
-
-            <div className="p-5 border-t border-gray-800 flex justify-end">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -10,7 +10,7 @@ const UserSchema = new Schema({
   email: { type: String, unique: true },
   password: String,
   roomNumber : {type:Number ,require:true},
-  isProfileUpdated: { type: Boolean, default: false },
+  
 });
 
 const AdminSchema = new Schema({
@@ -38,7 +38,7 @@ const UserDetailsSchema = new Schema({
   semester: String,
   roomNumber: { type: Number },
   // dateOfAdmission: String,
-  Email: { type: String, unique: true },
+  Email: { type: String, require: true },
   
 });
 
