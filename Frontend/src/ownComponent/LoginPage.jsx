@@ -44,8 +44,15 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      
+      // Store token and role
+      if (activeTab === "admin") {
+        localStorage.setItem("adminToken", data.token);
+        localStorage.setItem("role", "admin");
+      } else {
+        localStorage.setItem("userToken", data.token);
+        localStorage.setItem("role", "user");
+      }
+
       if (activeTab === "admin") {
         navigate("/AdminDashboard");
       } else {

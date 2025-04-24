@@ -13,25 +13,17 @@ const{userMiddleware} = require("../middleware/userMid")
 
 
 userRouter.post("/Login", async function (req, res) {
-  console.log("Request Body:", req.body);
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({
-      message: "Email and password are required",
-    });
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
-    const user = await userModel.findOne({ email }); // Changed 'response' to 'user'
+    const user = await userModel.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User Not Found In Database" });
     }
-
-    console.log("Plain-text Password from Request:", password);
-    console.log("Hashed Password from DB:", user.password);
-    console.log("Password Type:", typeof password);
-    console.log("Password Length:", password.length);
 
     if (!user.password) {
       return res.status(500).json({ message: "User password not set in database" });
@@ -44,30 +36,30 @@ userRouter.post("/Login", async function (req, res) {
 
     const passwordMatched = await bcrypt.compare(cleanPassword, user.password);
     if (!passwordMatched) {
-      return res.status(403).json({ message: "Invalid Creds" });
+      return res.status(403).json({ message: "Invalid Credentials" });
     }
 
     const userDetails = await userDetailModel.findOne({ userId: user._id });
     const profileExists = !!userDetails;
 
     const token = jwt.sign(
-      { id: user._id.toString() },
+      { id: user._id.toString(), role: "user" },
       JWT_USER_PASSWORD,
       { expiresIn: "1h" }
     );
 
     res.json({
       token,
+      role: "user",
       email: user.email,
-      roomNumber: user.roomNumber,
+      roomNumber: user.roomNumber || "",
       profileExists,
     });
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("User login error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 });
-
 
 
 
@@ -168,7 +160,7 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
 
   if (!Subject || !roomNumber || !complaintDate || !Description) {
     return res.status(400).json({ message: "All Fields Are Required" });
-  } 
+  }
 
   try {
     const room = await RoomModel.findOne({ roomNumber });
@@ -178,9 +170,10 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
 
     const newComplaint = await ComplaintModel.create({
       Subject,
-      roomNumber,
+      roomNumber, // 
       Description,
-      complaintDate
+      complaintDate: new Date(complaintDate),
+      status: "Pending",
     });
 
     res.status(201).json({
@@ -195,7 +188,6 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
     });
   }
 });
-
 
 
 

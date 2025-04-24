@@ -104,12 +104,12 @@ const StudentDashboard = () => {
   }
 
   const handleComplaintSubmit = async (e) => {
-    e.preventDefault()
-    setSubmittingComplaint(true)
-    const token = localStorage.getItem("token");
-    console.log(token);
+    e.preventDefault();
+    setSubmittingComplaint(true);
+    const token = localStorage.getItem("userToken");
+    console.log("User token:", token);
     if (!token) {
-      alert("Authorization token is missing. Please log in again.");
+      alert("Authorization token is missing. Please log in as a student.");
       return;
     }
     try {
@@ -119,27 +119,24 @@ const StudentDashboard = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            // Add Authorization header if userMiddleware requires a token
-            // Authorization: `Bearer ${yourToken}`
             "Authorization": `Bearer ${token}`,
           },
         }
-      )
-
-      setComplaintSuccess(true)
-      console.log("Complaint submitted:", response.data)
-
+      );
+  
+      setComplaintSuccess(true);
+      console.log("Complaint submitted:", response.data);
+  
       setTimeout(() => {
-        closeModal()
-      }, 2000)
+        closeModal();
+      }, 2000);
     } catch (error) {
-      console.error("Error submitting complaint:", error.response?.data || error)
-      alert(error.response?.data?.message || "Error submitting complaint")
+      console.error("Error submitting complaint:", error.response?.data || error);
+      alert(error.response?.data?.message || "Error submitting complaint");
     } finally {
-      setSubmittingComplaint(false)
+      setSubmittingComplaint(false);
     }
-  }
-
+  };
   if (showProfile) {
     return <ProfileUpdate onComplete={() => setShowProfile(false)} />
   }

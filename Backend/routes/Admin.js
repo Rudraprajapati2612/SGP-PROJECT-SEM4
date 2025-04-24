@@ -55,38 +55,31 @@ await adminModel.create({
 });
 // api for login 
 adminRouter.post("/Login", async function (req, res) {
-  const email = req.body.email;
-  const password = req.body.password;
+  const { email, password } = req.body;
 
-  const response = await adminModel.findOne({
-    email: email,
-  });
+  try {
+    const admin = await adminModel.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: "User Not Found In Database" });
+    }
 
-  if (!response) {
-    res.json({
-      message: "User Not Found In Database ",
-    });
-    return;
-  }
-// hash a password and assign jwt token
-  const passwordMatched = await bcrypt.compare(password, response.password);
-  if (passwordMatched) {
+    const passwordMatched = await bcrypt.compare(password, admin.password);
+    if (!passwordMatched) {
+      return res.status(403).json({ message: "Invalid Credentials" });
+    }
+
     const token = jwt.sign(
-      {
-        id: response._id.toString(),
-      },
-      JWT_ADMIN_PASSWORD
+      { id: admin._id.toString(), role: "admin" },
+      JWT_ADMIN_PASSWORD,
+      { expiresIn: "1h" }
     );
-    res.json({
-      token,
-    });
-  } else {
-    res.status(403).json({
-      message: "Invalid Creds",
-    });
+
+    res.json({ token, role: "admin" });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 });
-
 
 adminRouter.post("/add-room", adminMiddleware, async (req, res) => {
   const { roomNumber, capacity } = req.body;
