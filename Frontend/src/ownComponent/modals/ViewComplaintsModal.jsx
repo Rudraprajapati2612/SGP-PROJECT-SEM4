@@ -14,6 +14,7 @@ export function ViewComplaintsModal({ onClose }) {
   useEffect(() => {
     const fetchComplaints = async () => {
       const token = localStorage.getItem("token");
+      console.log(token);
       if (!token) {
         setError("No admin token found.");
         setLoading(false);
@@ -60,11 +61,12 @@ export function ViewComplaintsModal({ onClose }) {
   const handleResolve = async (complaintId) => {
     try {
       const token = localStorage.getItem("token");
+      console.log(token);
       if (!token) {
         setError("No admin token found.");
         return;
       }
-
+      console.log(token);
       const response = await fetch(`http://localhost:3000/api/v1/admin/ResolveComplaint/${complaintId}`, {
         method: "PUT",
         headers: {

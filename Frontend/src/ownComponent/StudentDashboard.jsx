@@ -107,6 +107,7 @@ const StudentDashboard = () => {
     e.preventDefault()
     setSubmittingComplaint(true)
     const token = localStorage.getItem("token");
+    console.log(token);
     if (!token) {
       alert("Authorization token is missing. Please log in again.");
       return;

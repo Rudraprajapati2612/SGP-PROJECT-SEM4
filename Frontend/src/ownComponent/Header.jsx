@@ -15,25 +15,30 @@ function Header() {
 
       {/* Navigation Links */}
       <ul className="hidden md:flex gap-8 text-lg">
-        <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
-        <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
-        <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
+        <Link to='/'>
+          <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
+        </Link>
+        <Link to='/AboutUsPage'>
+          <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
+        </Link>
+        <Link to='/ContactUsPage'>
+          <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
+        </Link>
       </ul>
 
       {/* Login & Register Buttons */}
       <div className="hidden md:flex gap-4">
-        <Link to='/Login' >
+        <Link to='/Login'>
           <button className="text-white px-5 py-2 rounded-lg hover:text-gray-400 bg-[#1B1D23]">
             Login
           </button>
         </Link>
 
-        <Link to='/AdminRegestration' >
-        <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
-          Register as Admin
-        </button>
+        <Link to='/AdminRegestration'>
+          <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
+            Register as Admin
+          </button>
         </Link>
-        
       </div>
 
       {/* Mobile Menu Icon */}
@@ -45,21 +50,27 @@ function Header() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <ul className="absolute top-16 left-0 w-full bg-[#0F1117] flex flex-col items-center gap-4 py-4 border-b border-gray-700">
-          <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
-          <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
-          <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
+        <ul className="absolute top-16 left-0 w-full bg-[#0F1117] flex flex-col items-center gap-4 py-4 border-b border-gray-700 z-50">
+          <Link to='/' onClick={() => setMenuOpen(false)}>
+            <li className="text-white hover:text-gray-400 cursor-pointer">Home</li>
+          </Link>
+          <Link to='/AboutUsPage' onClick={() => setMenuOpen(false)}>
+            <li className="text-white hover:text-gray-400 cursor-pointer">About Us</li>
+          </Link>
+          <Link to='/ContactUsPage' onClick={() => setMenuOpen(false)}>
+            <li className="text-white hover:text-gray-400 cursor-pointer">Contact Us</li>
+          </Link>
           
-          <Link to='/Login' >
-          <button className="text-white px-5 py-2 rounded-lg hover:text-gray-400 bg-[#1B1D23]">
-            Login
-          </button>
-        </Link>
-        <Link to='/AdminRegestration' >
-        <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
-          Register as Admin
-        </button>
-        </Link>
+          <Link to='/Login' onClick={() => setMenuOpen(false)}>
+            <button className="text-white px-5 py-2 rounded-lg hover:text-gray-400 bg-[#1B1D23]">
+              Login
+            </button>
+          </Link>
+          <Link to='/AdminRegestration' onClick={() => setMenuOpen(false)}>
+            <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
+              Register as Admin
+            </button>
+          </Link>
         </ul>
       )}
     </nav>

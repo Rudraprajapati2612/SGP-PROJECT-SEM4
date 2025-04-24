@@ -7,7 +7,9 @@ import AdminDashboard from './ownComponent/AdminDashboard';
 import LoginPage from './ownComponent/LoginPage';
 import AdminRegistration from './ownComponent/Adminregestration';
 import StudentDashboard from './ownComponent/StudentDashboard';
-import ProfileUpdate from './ownComponent/ProfileUpdate'; // Add this import
+import ProfileUpdate from './ownComponent/ProfileUpdate';
+import AboutUsPage from './ownComponent/AboutUsPage'; // Add this import
+import ContactUsPage from './ownComponent/ContactUsPage'; // Add this import
 
 function App() {
   const [count, setCount] = useState(0);
@@ -20,7 +22,9 @@ function App() {
         <Route path="/Login" element={<LoginPage />} />
         <Route path="/AdminRegestration" element={<AdminRegistration />} />
         <Route path="/StudentDashboard" element={<StudentDashboard />} />
-        <Route path="/ProfileUpdate" element={<ProfileUpdate />} /> {/* Add this route */}
+        <Route path="/ProfileUpdate" element={<ProfileUpdate />} />
+        <Route path="/AboutUsPage" element={<AboutUsPage />} />
+        <Route path="/ContactUsPage" element={<ContactUsPage />} />
       </Routes>
     </Router>
   );
