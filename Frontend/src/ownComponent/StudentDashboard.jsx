@@ -91,42 +91,47 @@ const StudentDashboard = () => {
     })
   }
 
+
   const fetchMenu = async (date) => {
-    setLoadingMenu(true)
-    console.log("Fetching menu for date:", date)
+    setLoadingMenu(true);
+    console.log("Fetching menu for date:", date);
     try {
-      const mealTypes = ["Breakfast", "Lunch", "Dinner"]
+      const mealTypes = ["Breakfast", "Lunch", "Dinner"];
+      
       const menuPromises = mealTypes.map((mealType) =>
         axios
-          .get("http://localhost:3000/api/v1/user/GetMenu", {
-            params: { date, MealType: mealType },
-          })
+          .post("http://localhost:4000/api/v1/user/GetMenu", 
+            { date, MealType: mealType }, // 👈 send data in POST body
+            { headers: { "Content-Type": "application/json" } } // 👈 important for POST
+          )
           .catch((error) => {
-            console.error(`Error fetching ${mealType}:`, error.response?.data || error)
-            return { data: { menu: null } }
-          }),
-      )
-
-      const responses = await Promise.all(menuPromises)
+            console.error(`Error fetching ${mealType}:`, error.response?.data || error);
+            return { data: { menu: null } };
+          })
+      );
+  
+      const responses = await Promise.all(menuPromises);
+  
       const newMenuData = {
-        breakfast: responses[0].data.menu?.items || "Menu not available",
-        lunch: responses[1].data.menu?.items || "Menu not available",
-        dinner: responses[2].data.menu?.items || "Menu not available",
-      }
-      console.log("Menu data fetched:", newMenuData)
-      setMenuData(newMenuData)
+        breakfast: responses[0].data.menu?.MenuItem || "Menu not available",
+        lunch: responses[1].data.menu?.MenuItem || "Menu not available",
+        dinner: responses[2].data.menu?.MenuItem || "Menu not available",
+      };
+  
+      console.log("Menu data fetched:", newMenuData);
+      setMenuData(newMenuData);
     } catch (error) {
-      console.error("Unexpected error fetching menu:", error)
+      console.error("Unexpected error fetching menu:", error);
       setMenuData({
         breakfast: "Error loading menu",
         lunch: "Error loading menu",
         dinner: "Error loading menu",
-      })
+      });
     } finally {
-      setLoadingMenu(false)
+      setLoadingMenu(false);
     }
-  }
-
+  };
+  
   useEffect(() => {
     if (activeModal === "menu") {
       fetchMenu(selectedDate)
