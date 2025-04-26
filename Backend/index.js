@@ -26,8 +26,8 @@ async function main() {
   await mongoose.connect(process.env.MONGO_URL);
   console.log("Connected to MongoDB");
 
-  app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+  app.listen(4000, () => {
+    console.log("Server running on http://localhost:4000");
   });
 }
 
