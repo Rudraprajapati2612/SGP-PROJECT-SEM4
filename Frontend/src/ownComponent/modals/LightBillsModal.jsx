@@ -120,7 +120,7 @@ export function LightBillsModal({ lightBills: initialBills = [], onClose }) {
     };
 
     try {
-      const token = localStorage.getItem("token"); 
+      const token = localStorage.getItem("adminToken"); 
 
       if (!token) {
         console.error("No auth token found. User might not be logged in.");

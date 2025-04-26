@@ -12,6 +12,7 @@ import {
   Settings,
   Calendar,
   ChevronDown,
+  X,
 } from "lucide-react"
 import ProfileUpdate from "./ProfileUpdate"
 import axios from "axios"
@@ -35,6 +36,10 @@ const StudentDashboard = () => {
   })
   const [submittingComplaint, setSubmittingComplaint] = useState(false)
   const [complaintSuccess, setComplaintSuccess] = useState(false)
+  const [studentInfo, setStudentInfo] = useState({
+    name: "Rudra Prajapati",
+    roomNumber: "203",
+  })
 
   const roomNumbers = ["101", "102", "103", "201", "202", "203", "301", "302", "303"]
 
@@ -43,6 +48,37 @@ const StudentDashboard = () => {
     { month: "March 2024", amount: "₹850", status: "Paid", units: 170 },
     { month: "February 2024", amount: "₹780", status: "Paid", units: 156 },
   ]
+
+  // Fetch student information on component mount
+  useEffect(() => {
+    const fetchStudentInfo = async () => {
+      try {
+        const token = localStorage.getItem("userToken")
+        if (!token) {
+          console.log("No token found, using default student info")
+          return
+        }
+
+        // Replace with your actual API endpoint
+        const response = await axios.get("http://localhost:3000/api/v1/user/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (response.data && response.data.user) {
+          setStudentInfo({
+            name: response.data.user.name || "Rudra Prajapati",
+            roomNumber: response.data.user.roomNumber || "203",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching student info:", error)
+      }
+    }
+
+    fetchStudentInfo()
+  }, [])
 
   const closeModal = () => {
     setActiveModal(null)
@@ -61,12 +97,14 @@ const StudentDashboard = () => {
     try {
       const mealTypes = ["Breakfast", "Lunch", "Dinner"]
       const menuPromises = mealTypes.map((mealType) =>
-        axios.get("http://localhost:3000/api/v1/user/GetMenu", {
-          params: { date, MealType: mealType },
-        }).catch((error) => {
-          console.error(`Error fetching ${mealType}:`, error.response?.data || error)
-          return { data: { menu: null } }
-        })
+        axios
+          .get("http://localhost:3000/api/v1/user/GetMenu", {
+            params: { date, MealType: mealType },
+          })
+          .catch((error) => {
+            console.error(`Error fetching ${mealType}:`, error.response?.data || error)
+            return { data: { menu: null } }
+          }),
       )
 
       const responses = await Promise.all(menuPromises)
@@ -104,39 +142,41 @@ const StudentDashboard = () => {
   }
 
   const handleComplaintSubmit = async (e) => {
-    e.preventDefault();
-    setSubmittingComplaint(true);
-    const token = localStorage.getItem("userToken");
-    console.log("User token:", token);
+    e.preventDefault()
+    setSubmittingComplaint(true)
+    const token = localStorage.getItem("userToken")
+    console.log("User token:", token)
     if (!token) {
-      alert("Authorization token is missing. Please log in as a student.");
-      return;
+      alert("Authorization token is missing. Please log in as a student.")
+      return
     }
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/user/AddComplaint",
-        complaintForm,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
-  
-      setComplaintSuccess(true);
-      console.log("Complaint submitted:", response.data);
-  
+      const response = await axios.post("http://localhost:3000/api/v1/user/AddComplaint", complaintForm, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      setComplaintSuccess(true)
+      console.log("Complaint submitted:", response.data)
+
       setTimeout(() => {
-        closeModal();
-      }, 2000);
+        closeModal()
+      }, 2000)
     } catch (error) {
-      console.error("Error submitting complaint:", error.response?.data || error);
-      alert(error.response?.data?.message || "Error submitting complaint");
+      console.error("Error submitting complaint:", error.response?.data || error)
+      alert(error.response?.data?.message || "Error submitting complaint")
     } finally {
-      setSubmittingComplaint(false);
+      setSubmittingComplaint(false)
     }
-  };
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken")
+    window.location.href = "/Login"
+  }
+
   if (showProfile) {
     return <ProfileUpdate onComplete={() => setShowProfile(false)} />
   }
@@ -156,13 +196,13 @@ const StudentDashboard = () => {
                 <div className="h-8 w-8 rounded-full bg-[#6C5DD3] flex items-center justify-center">
                   <User size={16} />
                 </div>
-                <span>Rudra Prajapati</span>
+                <span>{studentInfo.name}</span>
                 <ChevronDown size={16} className="text-gray-400" />
               </button>
               <div className="absolute right-0 mt-2 w-48 bg-[#161927] border border-gray-800 rounded-lg shadow-lg overflow-hidden invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <div className="p-3 border-b border-gray-800">
-                  <p className="text-sm font-medium">Rudra Prajapati</p>
-                  <p className="text-xs text-gray-400">Room 203</p>
+                  <p className="text-sm font-medium">{studentInfo.name}</p>
+                  <p className="text-xs text-gray-400">Room {studentInfo.roomNumber}</p>
                 </div>
                 <div className="p-1">
                   <button
@@ -176,7 +216,10 @@ const StudentDashboard = () => {
                     <Settings size={16} className="text-gray-400" />
                     <span>Settings</span>
                   </button>
-                  <button className="flex items-center space-x-2 w-full p-2 text-left text-sm hover:bg-gray-800 rounded-md text-red-400">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 w-full p-2 text-left text-sm hover:bg-gray-800 rounded-md text-red-400"
+                  >
                     <LogOut size={16} />
                     <span>Logout</span>
                   </button>
@@ -283,8 +326,15 @@ const StudentDashboard = () => {
           <div className="bg-[#1A1D29] rounded-xl border border-gray-800 max-w-md w-full max-h-[90vh] overflow-auto">
             {activeModal === "payment" && (
               <div>
-                <div className="p-5 border-b border-gray-800">
+                <div className="p-5 border-b border-gray-800 flex justify-between items-center">
                   <h3 className="text-xl font-semibold">Make Payment</h3>
+                  <button
+                    onClick={closeModal}
+                    className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} className="text-gray-300" />
+                  </button>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="space-y-2">
@@ -315,8 +365,15 @@ const StudentDashboard = () => {
 
             {activeModal === "menu" && (
               <div>
-                <div className="p-5 border-b border-gray-800">
+                <div className="p-5 border-b border-gray-800 flex justify-between items-center">
                   <h3 className="text-xl font-semibold">Menu for {selectedDate}</h3>
+                  <button
+                    onClick={closeModal}
+                    className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} className="text-gray-300" />
+                  </button>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="space-y-2">
@@ -352,13 +409,28 @@ const StudentDashboard = () => {
                     )}
                   </div>
                 </div>
+                <div className="p-5 border-t border-gray-800 flex justify-end">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
 
             {activeModal === "bill" && (
               <div>
-                <div className="p-5 border-b border-gray-800">
+                <div className="p-5 border-b border-gray-800 flex justify-between items-center">
                   <h3 className="text-xl font-semibold">Light Bill History</h3>
+                  <button
+                    onClick={closeModal}
+                    className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} className="text-gray-300" />
+                  </button>
                 </div>
                 <div className="p-5 space-y-4">
                   {billHistory.map((bill, index) => (
@@ -389,13 +461,28 @@ const StudentDashboard = () => {
                     </div>
                   ))}
                 </div>
+                <div className="p-5 border-t border-gray-800 flex justify-end">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
 
             {activeModal === "complaint" && (
               <div>
-                <div className="p-5 border-b border-gray-800">
+                <div className="p-5 border-b border-gray-800 flex justify-between items-center">
                   <h3 className="text-xl font-semibold">Submit Complaint</h3>
+                  <button
+                    onClick={closeModal}
+                    className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} className="text-gray-300" />
+                  </button>
                 </div>
                 <form onSubmit={handleComplaintSubmit} className="p-5 space-y-4">
                   <div className="space-y-2">
@@ -457,15 +544,15 @@ const StudentDashboard = () => {
                         submittingComplaint
                           ? "bg-gray-600 cursor-not-allowed"
                           : complaintSuccess
-                          ? "bg-green-500"
-                          : "bg-[#6C5DD3] hover:bg-[#5B4DC3]"
+                            ? "bg-green-500"
+                            : "bg-[#6C5DD3] hover:bg-[#5B4DC3]"
                       }`}
                     >
                       {submittingComplaint
                         ? "Submitting..."
                         : complaintSuccess
-                        ? "Complaint Submitted!"
-                        : "Submit Complaint"}
+                          ? "Complaint Submitted!"
+                          : "Submit Complaint"}
                     </button>
                   </div>
                 </form>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Calendar } from "lucide-react"
+import { X } from "lucide-react"
 
 export function UpdateMenuModal({ onClose }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
@@ -9,30 +9,20 @@ export function UpdateMenuModal({ onClose }) {
     mealType: "breakfast",
     items: "",
   })
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [displayDate, setDisplayDate] = useState("")
 
-  // Format the date for display
   useEffect(() => {
-    if (selectedDate) {
-      const date = new Date(selectedDate)
-      setDisplayDate(
-        date.toLocaleDateString("en-US", {
-          weekday: "short",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }),
-      )
+    const token = localStorage.getItem("adminToken")
+    if (!token) {
+      console.warn("No admin token found. Authentication may fail.")
     }
-  }, [selectedDate])
+  }, [])
 
   const handleUpdateMenu = async (e) => {
     e.preventDefault()
 
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("adminToken")
     if (!token) {
-      console.error("No token found, user not authenticated")
+      alert("You are not authenticated as an admin. Please log in again.")
       return
     }
 
@@ -48,7 +38,7 @@ export function UpdateMenuModal({ onClose }) {
 
     // Ensure no empty values
     if (!formattedDate || !menuData.mealType || !menuData.items.trim()) {
-      console.error("Error: All fields are required")
+      alert("Error: All fields are required")
       return
     }
 
@@ -57,7 +47,7 @@ export function UpdateMenuModal({ onClose }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Make sure the token format is correct
         },
         body: JSON.stringify({
           date: formattedDate,
@@ -70,99 +60,16 @@ export function UpdateMenuModal({ onClose }) {
 
       if (response.ok) {
         console.log("Menu updated successfully:", result)
+        alert("Menu updated successfully!")
         onClose()
       } else {
         console.error("Failed to update menu:", result.message)
+        alert(`Failed to update menu: ${result.message || "Unknown error"}`)
       }
     } catch (error) {
       console.error("Error updating menu:", error)
+      alert("Error connecting to the server. Please try again.")
     }
-  }
-
-  // Generate calendar for custom date picker
-  const renderCalendar = () => {
-    const today = new Date()
-    const currentMonth = new Date(selectedDate || today)
-    currentMonth.setDate(1)
-
-    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate()
-
-    const firstDayOfMonth = currentMonth.getDay()
-
-    const monthName = currentMonth.toLocaleString("default", { month: "long" })
-    const year = currentMonth.getFullYear()
-
-    const days = []
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="h-8 w-8"></div>)
-    }
-
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-      const dateString = date.toISOString().split("T")[0]
-      const isSelected = dateString === selectedDate
-      const isToday = date.toDateString() === today.toDateString()
-
-      days.push(
-        <button
-          key={day}
-          type="button"
-          onClick={() => {
-            setSelectedDate(dateString)
-            setShowDatePicker(false)
-          }}
-          className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-colors
-            ${isSelected ? "bg-[#6C5DD3] text-white" : ""}
-            ${isToday && !isSelected ? "border border-[#6C5DD3] text-white" : ""}
-            ${!isSelected && !isToday ? "hover:bg-gray-700 text-gray-300" : ""}
-          `}
-        >
-          {day}
-        </button>,
-      )
-    }
-
-    return (
-      <div className="p-3 bg-[#0F1117] border border-gray-700 rounded-lg shadow-lg absolute top-full left-0 z-10 mt-1 w-64">
-        <div className="flex justify-between items-center mb-2">
-          <button
-            type="button"
-            onClick={() => {
-              const prevMonth = new Date(currentMonth)
-              prevMonth.setMonth(prevMonth.getMonth() - 1)
-              setSelectedDate(prevMonth.toISOString().split("T")[0])
-            }}
-            className="p-1 hover:bg-gray-700 rounded-full"
-          >
-            &lt;
-          </button>
-          <div className="font-medium text-white">
-            {monthName} {year}
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const nextMonth = new Date(currentMonth)
-              nextMonth.setMonth(nextMonth.getMonth() + 1)
-              setSelectedDate(nextMonth.toISOString().split("T")[0])
-            }}
-            className="p-1 hover:bg-gray-700 rounded-full"
-          >
-            &gt;
-          </button>
-        </div>
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-            <div key={day} className="h-8 w-8 flex items-center justify-center text-xs text-gray-500">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">{days}</div>
-      </div>
-    )
   }
 
   return (
@@ -183,29 +90,13 @@ export function UpdateMenuModal({ onClose }) {
             <label htmlFor="menuDate" className="text-sm font-medium text-gray-300 block">
               Select Date
             </label>
-
-            {/* Custom Date Picker Trigger */}
-            <div className="relative">
-              <div
-                className="w-full bg-[#0F1117] border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3] transition-all flex items-center justify-between cursor-pointer"
-                onClick={() => setShowDatePicker(!showDatePicker)}
-              >
-                <span>{displayDate || "Select a date"}</span>
-                <Calendar size={18} className="text-gray-400" />
-              </div>
-
-              {/* Hidden Native Date Input (for form submission) */}
-              <input
-                id="menuDate"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="sr-only"
-              />
-
-              {/* Custom Calendar Dropdown */}
-              {showDatePicker && <div className="relative">{renderCalendar()}</div>}
-            </div>
+            <input
+              id="menuDate"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full bg-[#0F1117] border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#6C5DD3] transition-all"
+            />
           </div>
 
           {/* Meal Type Selection */}

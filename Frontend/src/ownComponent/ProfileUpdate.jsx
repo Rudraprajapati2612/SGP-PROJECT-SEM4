@@ -1,4 +1,4 @@
-"use client"
+// "use client"
 
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -47,7 +47,7 @@ export default function ProfileUpdate() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("userToken");
       const response = await fetch("http://localhost:3000/api/v1/user/updateProfile", {
         method: "PUT",
         headers: {

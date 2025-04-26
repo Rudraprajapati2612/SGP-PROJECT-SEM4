@@ -83,7 +83,7 @@ const StudentRegistration = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("adminToken");
     if (!token) {
       alert("Authorization token is missing. Please log in again.");
       return;
