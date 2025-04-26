@@ -190,7 +190,18 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
 });
 
 
-
+userRouter.get("/profile", userMiddleware, async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id).select("name roomNumber billHistory pendingFees");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+});
 
 // userRouter.get("/Users", userMiddleware, async (req, res) => {
 //   console.log("Received GET request to /api/v1/user/user");
@@ -211,7 +222,7 @@ userRouter.post("/AddComplaint", userMiddleware, async function (req, res) {
 
 
 
-userRouter.get("/GetMenu", async (req, res) => {
+userRouter.post("/GetMenu", async (req, res) => {
   const { date, MealType } = req.body;
   console.log("Request Body:", req.body);
 

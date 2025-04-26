@@ -17,6 +17,146 @@ import {
 import ProfileUpdate from "./ProfileUpdate"
 import axios from "axios"
 
+const PaymentForm = ({ amount, onClose, type = "fee", billMonth, onBillPaid }) => {
+  const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error("Failed to load Razorpay script"));
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
+    setLoading(true);
+    setPaymentError(null);
+
+    try {
+      // Load Razorpay script
+      await loadRazorpayScript();
+
+      // Create order
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        setPaymentError("Authorization token is missing. Please log in.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/payment/create-order",
+        { amount, type, billMonth },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { order_id, key_id } = response.data;
+
+      // Initialize Razorpay
+      const options = {
+        key: key_id,
+        amount: amount * 100, // In paise
+        currency: "INR",
+        name: "Hostel Management",
+        description: type === "fee" ? "Hostel Fee Payment" : "Light Bill Payment",
+        order_id,
+        handler: async (response) => {
+          try {
+            // Verify payment
+            const verifyResponse = await axios.post(
+              "http://localhost:3000/api/v1/payment/verify-payment",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                type,
+                billMonth,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            setPaymentSuccess(true);
+            if (type === "bill" && billMonth && onBillPaid) {
+              onBillPaid(billMonth); // Update bill status in frontend
+            }
+            setTimeout(() => {
+              onClose();
+            }, 2000);
+          } catch (error) {
+            console.error("Payment verification failed:", error);
+            setPaymentError(error.response?.data?.message || "Payment verification failed");
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: "Student Name", // Replace with studentInfo.name
+          email: "student@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#6C5DD3", // Match Tailwind primary color
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", (response) => {
+        setPaymentError(response.error.description);
+        setLoading(false);
+      });
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      setPaymentError(error.message || "Error initiating payment");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-sm text-gray-400">Amount</label>
+        <input
+          type="text"
+          value={`₹${amount.toLocaleString()}`}
+          readOnly
+          className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none"
+        />
+      </div>
+      {paymentError && <p className="text-red-400 text-sm">{paymentError}</p>}
+      {paymentSuccess && <p className="text-green-400 text-sm">Payment successful!</p>}
+      <div className="pt-4">
+        <button
+          onClick={handlePayment}
+          disabled={loading}
+          className={`w-full py-2 rounded-lg font-medium transition-colors ${
+            loading ? "bg-gray-600 cursor-not-allowed" : "bg-[#6C5DD3] hover:bg-[#5B4DC3]"
+          }`}
+        >
+          {loading ? "Processing..." : "Pay Now"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const StudentDashboard = () => {
   const [activeModal, setActiveModal] = useState(null)
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
@@ -40,16 +180,14 @@ const StudentDashboard = () => {
     name: "Rudra Prajapati",
     roomNumber: "203",
   })
-
-  const roomNumbers = ["101", "102", "103", "201", "202", "203", "301", "302", "303"]
-
-  const billHistory = [
+  const [billHistory, setBillHistory] = useState([
     { month: "April 2024", amount: "₹920", status: "Unpaid", units: 184, dueDate: "April 30, 2024" },
     { month: "March 2024", amount: "₹850", status: "Paid", units: 170 },
     { month: "February 2024", amount: "₹780", status: "Paid", units: 156 },
-  ]
+  ])
 
-  // Fetch student information on component mount
+  const roomNumbers = ["101", "102", "103", "201", "202", "203", "301", "302", "303"]
+
   useEffect(() => {
     const fetchStudentInfo = async () => {
       try {
@@ -59,7 +197,6 @@ const StudentDashboard = () => {
           return
         }
 
-        // Replace with your actual API endpoint
         const response = await axios.get("http://localhost:3000/api/v1/user/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -71,6 +208,10 @@ const StudentDashboard = () => {
             name: response.data.user.name || "Rudra Prajapati",
             roomNumber: response.data.user.roomNumber || "203",
           })
+          // Update billHistory from server if available
+          if (response.data.user.billHistory) {
+            setBillHistory(response.data.user.billHistory);
+          }
         }
       } catch (error) {
         console.error("Error fetching student info:", error)
@@ -91,7 +232,6 @@ const StudentDashboard = () => {
     })
   }
 
-
   const fetchMenu = async (date) => {
     setLoadingMenu(true);
     console.log("Fetching menu for date:", date);
@@ -99,23 +239,29 @@ const StudentDashboard = () => {
       const mealTypes = ["Breakfast", "Lunch", "Dinner"];
       
       const menuPromises = mealTypes.map((mealType) =>
-        axios
-          .post("http://localhost:4000/api/v1/user/GetMenu", 
-            { date, MealType: mealType }, // 👈 send data in POST body
-            { headers: { "Content-Type": "application/json" } } // 👈 important for POST
-          )
-          .catch((error) => {
-            console.error(`Error fetching ${mealType}:`, error.response?.data || error);
-            return { data: { menu: null } };
-          })
+        axios.post(
+          "http://localhost:3000/api/v1/user/GetMenu",
+          { date, MealType: mealType },
+          { 
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("userToken")}`
+            } 
+          }
+        )
+        .then(response => response.data)
+        .catch((error) => {
+          console.error(`Error fetching ${mealType}:`, error.response?.data || error);
+          return { menu: null };
+        })
       );
   
       const responses = await Promise.all(menuPromises);
   
       const newMenuData = {
-        breakfast: responses[0].data.menu?.MenuItem || "Menu not available",
-        lunch: responses[1].data.menu?.MenuItem || "Menu not available",
-        dinner: responses[2].data.menu?.MenuItem || "Menu not available",
+        breakfast: responses[0].menu?.MenuItem || "Menu not available",
+        lunch: responses[1].menu?.MenuItem || "Menu not available",
+        dinner: responses[2].menu?.MenuItem || "Menu not available",
       };
   
       console.log("Menu data fetched:", newMenuData);
@@ -181,6 +327,14 @@ const StudentDashboard = () => {
     localStorage.removeItem("userToken")
     window.location.href = "/Login"
   }
+
+  const handleBillPaid = (billMonth) => {
+    setBillHistory((prev) =>
+      prev.map((bill) =>
+        bill.month === billMonth ? { ...bill, status: "Paid" } : bill
+      )
+    );
+  };
 
   if (showProfile) {
     return <ProfileUpdate onComplete={() => setShowProfile(false)} />
@@ -341,29 +495,8 @@ const StudentDashboard = () => {
                     <X size={20} className="text-gray-300" />
                   </button>
                 </div>
-                <div className="p-5 space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm text-gray-400">Amount</label>
-                    <input
-                      type="text"
-                      value="₹10,000"
-                      readOnly
-                      className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm text-gray-400">Payment Method</label>
-                    <select className="w-full bg-[#0F1117] border border-gray-800 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#6C5DD3]">
-                      <option>Credit/Debit Card</option>
-                      <option>UPI</option>
-                      <option>Net Banking</option>
-                    </select>
-                  </div>
-                  <div className="pt-4">
-                    <button className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-2 rounded-lg font-medium transition-colors">
-                      Proceed to Payment
-                    </button>
-                  </div>
+                <div className="p-5">
+                  <PaymentForm amount={10000} onClose={closeModal} type="fee" />
                 </div>
               </div>
             )}
@@ -458,7 +591,10 @@ const StudentDashboard = () => {
                             <span className="text-gray-400">Due Date:</span>
                             <span>{bill.dueDate}</span>
                           </div>
-                          <button className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-2 rounded-lg text-sm font-medium transition-colors">
+                          <button
+                            onClick={() => setActiveModal(`bill_payment_${bill.month}`)}
+                            className="w-full bg-[#6C5DD3] hover:bg-[#5B4DC3] py-2 rounded-lg text-sm font-medium transition-colors"
+                          >
                             Pay Now
                           </button>
                         </div>
@@ -476,6 +612,32 @@ const StudentDashboard = () => {
                 </div>
               </div>
             )}
+
+            {billHistory.map((bill) => (
+              activeModal === `bill_payment_${bill.month}` && (
+                <div key={bill.month}>
+                  <div className="p-5 border-b border-gray-800 flex justify-between items-center">
+                    <h3 className="text-xl font-semibold">Pay Light Bill</h3>
+                    <button
+                      onClick={closeModal}
+                      className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+                      aria-label="Close"
+                    >
+                      <X size={20} className="text-gray-300" />
+                    </button>
+                  </div>
+                  <div className="p-5">
+                    <PaymentForm
+                      amount={parseFloat(bill.amount.replace("₹", "").replace(",", ""))}
+                      onClose={closeModal}
+                      type="bill"
+                      billMonth={bill.month}
+                      onBillPaid={handleBillPaid}
+                    />
+                  </div>
+                </div>
+              )
+            ))}
 
             {activeModal === "complaint" && (
               <div>

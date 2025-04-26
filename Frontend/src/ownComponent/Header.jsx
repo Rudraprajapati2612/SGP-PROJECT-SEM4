@@ -34,11 +34,11 @@ function Header() {
           </button>
         </Link>
 
-        <Link to='/AdminRegestration'>
+        {/* <Link to='/AdminRegestration'>
           <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
             Register as Admin
           </button>
-        </Link>
+        </Link> */}
       </div>
 
       {/* Mobile Menu Icon */}
@@ -66,11 +66,11 @@ function Header() {
               Login
             </button>
           </Link>
-          <Link to='/AdminRegestration' onClick={() => setMenuOpen(false)}>
+          {/* <Link to='/AdminRegestration' onClick={() => setMenuOpen(false)}>
             <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold">
               Register as Admin
             </button>
-          </Link>
+          </Link> */}
         </ul>
       )}
     </nav>

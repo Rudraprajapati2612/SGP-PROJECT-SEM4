@@ -6,11 +6,25 @@ const Schema = mongoose.Schema;
 const objectId = Schema.ObjectId;
 
 const UserSchema = new Schema({
-  Name: String,
-  email: { type: String, unique: true },
-  password: String,
-  roomNumber : {type:Number ,require:true},
-  
+  // Name: String,
+  // email: { type: String, unique: true },
+  // password: String,
+  // roomNumber : {type:Number ,require:true},
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }, // Hashed password
+  roomNumber: { type: String, required: true },
+  pendingFees: { type: Number, default: 10000 }, // Default to ₹10,000 pending
+  billHistory: [
+    {
+      month: { type: String, required: true }, // e.g., "April 2024"
+      amount: { type: Number, required: true }, // e.g., 920 (in rupees)
+      status: { type: String, enum: ["Paid", "Unpaid"], default: "Unpaid" },
+      units: { type: Number, required: true }, // e.g., 184
+      dueDate: { type: String, required: true }, // e.g., "April 30, 2024"
+    },
+  ],
+  createdAt: { type: Date, default: Date.now },
 });
 
 const AdminSchema = new Schema({
@@ -75,6 +89,18 @@ const RoomSchema = new Schema({
     AnnouncementDate : {type :String,require :true},
     Description : {type :String,require :true}
   });
+  const paymentSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    razorpayOrderId: { type: String, required: true },
+    razorpayPaymentId: { type: String }, // ✅ remove required:true
+    amount: { type: Number, required: true },
+    currency: { type: String, default: "INR" },
+    type: { type: String, enum: ["fee", "bill"], required: true },
+    billMonth: { type: String },
+    status: { type: String, enum: ["created", "completed", "failed"], default: "created" },
+    createdAt: { type: Date, default: Date.now },
+  });
+  
 
 const userModel = mongoose.model("UserCred", UserSchema);
 const adminModel = mongoose.model("AdminCred", AdminSchema);
@@ -83,6 +109,7 @@ const RoomModel = mongoose.model("RoomDetails",RoomSchema);
 const MenuModel = mongoose.model("Menu",MenuSchema);
 const ComplaintModel = mongoose.model("Complain",ComplaintSchema);
 const LightBillModel = mongoose.model("LightBill",LightBillSchema);
+const PaymentModel = mongoose.model("Payment",paymentSchema);
 module.exports = {
   userModel,
   adminModel,
@@ -90,5 +117,6 @@ module.exports = {
   RoomModel,
   MenuModel,
   ComplaintModel,
-  LightBillModel
+  LightBillModel,
+  PaymentModel
 };
