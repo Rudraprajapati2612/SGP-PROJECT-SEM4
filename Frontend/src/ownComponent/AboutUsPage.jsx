@@ -221,12 +221,12 @@ export default function AboutUsPage({ onBack }) {
                 >
                   <div className="flex flex-col items-center text-center mb-4">
                     <div className="w-24 h-24 rounded-full bg-[#2A2D39] overflow-hidden mb-4">
-                      <img
+                      {/* <img
                         src={member.image || "/placeholder.svg"}
                         alt={member.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
-                      />
+                      /> */}
                     </div>
                     <h3 className="text-xl font-bold">{member.name}</h3>
                     <p className="text-[#6C5DD3] font-medium">{member.role}</p>

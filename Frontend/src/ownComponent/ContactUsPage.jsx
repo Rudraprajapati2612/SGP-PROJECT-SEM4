@@ -226,9 +226,9 @@ export default function ContactUsPage({ onBack }) {
                   <div>
                     <h3 className="font-medium text-lg">Address</h3>
                     <p className="text-gray-300 mt-1">
-                      123 University Avenue, <br />
-                      Campus District, <br />
-                      City, State 12345
+                    Charotar Greens Ave,
+Changa-Karoli Road
+Changa, 388421, India
                     </p>
                   </div>
                 </div>
@@ -239,8 +239,8 @@ export default function ContactUsPage({ onBack }) {
                   </div>
                   <div>
                     <h3 className="font-medium text-lg">Phone</h3>
-                    <p className="text-gray-300 mt-1">+1 (123) 456-7890</p>
-                    <p className="text-gray-300">+1 (987) 654-3210 (Warden)</p>
+                    <p className="text-gray-300 mt-1"> +91 97277 65994</p>
+                    <p className="text-gray-300">97232 65994</p>
                   </div>
                 </div>
 
@@ -270,16 +270,16 @@ export default function ContactUsPage({ onBack }) {
             </div>
 
             {/* Map */}
-            <div className="bg-[#1A1D29] rounded-xl border border-gray-800 p-8">
+            {/* <div className="bg-[#1A1D29] rounded-xl border border-gray-800 p-8">
               <h2 className="text-2xl font-bold mb-6">Find Us</h2>
               <div className="w-full h-64 bg-[#0F1117] rounded-lg overflow-hidden">
                 {/* Replace with actual map component or iframe */}
-                <div className="w-full h-full flex items-center justify-center bg-[#2A2D39]">
+                {/* <div className="w-full h-full flex items-center justify-center bg-[#2A2D39]">
                   <MapPin className="text-[#6C5DD3] mr-2" size={24} />
                   <span className="text-gray-300">Map placeholder - Embed your map here</span>
                 </div>
               </div>
-            </div>
+            </div> */} 
 
             {/* Social Media */}
             <div className="bg-[#1A1D29] rounded-xl border border-gray-800 p-8">

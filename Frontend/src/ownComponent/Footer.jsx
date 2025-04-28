@@ -32,9 +32,15 @@ function Footer() {
                         <a href="" className="text-gray-400 hover:text-white transition text-2xl">
                             <FaFacebookF />
                         </a>
-                        <a href="" className="text-gray-400 hover:text-white transition text-2xl">
-                            <FaInstagram />
-                        </a>
+                        <a 
+  href="https://www.instagram.com/shreedeep_hostel?igsh=MWsxbHhteGdudXZrcA%3D%3D&utm_source=qr" 
+  className="text-gray-400 hover:text-white transition text-2xl"
+  target="_blank" 
+  rel="noopener noreferrer"
+>
+  <FaInstagram />
+</a>
+
                         <a href="" className="text-gray-400 hover:text-white transition text-2xl">
                             <FaXTwitter />
                         </a>
