@@ -6,6 +6,13 @@ const Schema = mongoose.Schema;
 const objectId = Schema.ObjectId;
 
 const UserSchema = new Schema({
+  Name: String,
+  email: { type: String, unique: true },
+  password: String,
+  roomNumber : {type:Number ,require:true},
+  isProfileUpdated: { type: Boolean, default: false },
+});
+const UserSchemabill = new Schema({
   // Name: String,
   // email: { type: String, unique: true },
   // password: String,
@@ -26,7 +33,6 @@ const UserSchema = new Schema({
   ],
   createdAt: { type: Date, default: Date.now },
 });
-
 const AdminSchema = new Schema({
   email: { type: String, unique: true },
   password: String,
@@ -110,6 +116,7 @@ const MenuModel = mongoose.model("Menu",MenuSchema);
 const ComplaintModel = mongoose.model("Complain",ComplaintSchema);
 const LightBillModel = mongoose.model("LightBill",LightBillSchema);
 const PaymentModel = mongoose.model("Payment",paymentSchema);
+const UserSchemabillModel = mongoose.model("UserSchemabill",UserSchemabill);
 module.exports = {
   userModel,
   adminModel,
@@ -118,5 +125,6 @@ module.exports = {
   MenuModel,
   ComplaintModel,
   LightBillModel,
-  PaymentModel
+  PaymentModel,
+  UserSchemabillModel
 };

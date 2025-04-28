@@ -2,7 +2,7 @@ const express = require("express");
 const Razorpay = require("razorpay");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { PaymentModel, userModel } = require("../db"); // ✅ Correct import
+const { PaymentModel, UserSchemabillModel } = require("../db"); // ✅ Correct import
 require("dotenv").config();
 
 const Paymentrouter = express.Router();
@@ -95,13 +95,13 @@ Paymentrouter.post("/verify-payment", authMiddleware, async (req, res) => {
       // Update student record
       if (type === "bill" && billMonth) {
         // For bill payment -> mark bill as Paid
-        await userModel.updateOne(
+        await UserSchemabillModel.updateOne(
           { _id: req.user.id, "billHistory.month": billMonth },
           { $set: { "billHistory.$.status": "Paid" } }
         );
       } else if (type === "fee") {
         // For fee payment -> reduce pendingFees
-        await userModel.updateOne(
+        await UserSchemabillModel.updateOne(
           { _id: req.user.id },
           { $inc: { pendingFees: -(payment.amount / 100) } } // payment.amount is in paise
         );
